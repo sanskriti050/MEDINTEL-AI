@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import json
+from html import escape
 from dotenv import load_dotenv
 from groq import Groq
 
@@ -205,12 +206,53 @@ def show_medicine():
         unsafe_allow_html=True
     )
 
-    # ── Top metrics ─────────────────────────────────────────────
+    # ── Top medicine details ────────────────────────────────────
+    # Custom cards are used here instead of st.metric because Streamlit
+    # truncates long values with an ellipsis on narrow columns.
+    st.markdown("""
+        <style>
+        .medicine-detail-card {
+            background: #172033;
+            border: 1px solid #2B3648;
+            border-radius: 15px;
+            box-sizing: border-box;
+            min-height: 126px;
+            padding: 18px;
+        }
+        .medicine-detail-label {
+            color: #CBD5E1 !important;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .medicine-detail-value {
+            color: #E2E8F0 !important;
+            font-size: clamp(0.95rem, 1.6vw, 1.35rem);
+            font-weight: 400;
+            line-height: 1.25;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            white-space: normal;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    def detail_card(column, label, value):
+        safe_label = escape(str(label))
+        safe_value = escape(str(value or "N/A"))
+        column.markdown(
+            f"""<div class="medicine-detail-card">
+                <div class="medicine-detail-label">{safe_label}</div>
+                <div class="medicine-detail-value">{safe_value}</div>
+            </div>""",
+            unsafe_allow_html=True,
+        )
+
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("🏷️ Drug Class", info.get("drug_class", "N/A"))
-    c2.metric("📋 Schedule", info.get("otc_or_prescription", "N/A"))
-    c3.metric("🤰 Pregnancy", info.get("pregnancy_category", "N/A"))
-    c4.metric("🍼 Breastfeeding", info.get("breastfeeding", "N/A"))
+    detail_card(c1, "🏷️ Drug Class", info.get("drug_class", "N/A"))
+    detail_card(c2, "📋 Schedule", info.get("otc_or_prescription", "N/A"))
+    detail_card(c3, "🤰 Pregnancy", info.get("pregnancy_category", "N/A"))
+    detail_card(c4, "🍼 Breastfeeding", info.get("breastfeeding", "N/A"))
 
     st.divider()
 

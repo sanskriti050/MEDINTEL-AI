@@ -1,18 +1,19 @@
 """
-utils.py — PDF text extraction with 3-strategy cascade:
+Medical-report PDF extraction.
 
-  Strategy 1 → PyMuPDF  direct text  (fast, works on text-based PDFs)
-  Strategy 2 → pdfplumber             (table-heavy lab reports)
-  Strategy 3 → Groq Vision AI         (scanned / image PDFs — no Tesseract needed)
+Supports digital PDFs, scanned report pages, and photos saved as PDFs.  Extraction
+uses embedded PDF text first, then local OCR when available, then Groq Vision for
+image-only pages.  Each page is handled independently, so mixed PDFs work too.
 """
 
-import fitz          # PyMuPDF
-import io
-import re
-import os
 import base64
+import io
+import os
+import re
 
+import fitz  # PyMuPDF
 from dotenv import load_dotenv
+
 load_dotenv()
 
 
@@ -21,201 +22,180 @@ load_dotenv()
 # ─────────────────────────────────────────────────────────────────────────────
 
 def extract_text_from_pdf(uploaded_file) -> str:
+    """Return readable text from a medical PDF, including scanned/photo PDF pages.
+
+    The uploaded file is never written to disk.  For every page, the fastest and
+    most accurate available source is selected: embedded text → local OCR →
+    vision OCR.  This makes a report with a mix of digital and photographed pages
+    usable in one upload.
     """
-    Extract text from ANY PDF:
-    - Text-based PDFs  → PyMuPDF / pdfplumber
-    - Scanned PDFs     → Groq LLaMA-4 Vision (image understanding, no Tesseract)
-    Returns the extracted string, empty string if everything fails.
-    """
-    uploaded_file.seek(0)
-    raw_bytes = uploaded_file.read()
-
-    # ── Strategy 1: PyMuPDF ──────────────────────────────────────────────────
-    text = _try_pymupdf(raw_bytes)
-    if _is_good(text):
-        return _clean(text)
-
-    # ── Strategy 2: pdfplumber ───────────────────────────────────────────────
-    text = _try_pdfplumber(raw_bytes)
-    if _is_good(text):
-        return _clean(text)
-
-    # ── Strategy 3: Groq Vision AI (scanned PDF) ─────────────────────────────
-    text = _try_groq_vision(raw_bytes)
-    if _is_good(text):
-        return _clean(text)
-
-    # Nothing worked
-    return ""
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# STRATEGY 1 — PyMuPDF
-# ─────────────────────────────────────────────────────────────────────────────
-
-def _try_pymupdf(raw_bytes: bytes) -> str:
     try:
-        pdf   = fitz.open(stream=raw_bytes, filetype="pdf")
-        parts = []
+        uploaded_file.seek(0)
+        raw_bytes = uploaded_file.read()
+        if not raw_bytes:
+            return ""
 
-        for page in pdf:
-            page_text = ""
+        pdf = fitz.open(stream=raw_bytes, filetype="pdf")
+    except Exception as exc:
+        print(f"[PDF] Unable to open file: {exc}")
+        return ""
 
-            # 1a. Standard text
-            t = page.get_text("text")
-            if t and t.strip():
-                page_text = t
+    try:
+        pages = []
+        for page_number, page in enumerate(pdf, start=1):
+            # 1) Native PDF text (best for normal/generated PDFs)
+            embedded = _extract_embedded_page_text(page)
+            if _is_useful_page_text(embedded):
+                pages.append(_page_block(page_number, embedded))
+                continue
 
-            # 1b. Blocks (handles columnar/rotated text)
-            if not page_text.strip():
-                try:
-                    blocks    = page.get_text("blocks")
-                    page_text = "\n".join(
-                        b[4] for b in blocks
-                        if isinstance(b[4], str) and b[4].strip()
-                    )
-                except Exception:
-                    pass
+            # 2) Built-in Python OCR for image-only/scanned/photo PDFs.
+            # This does not need a separately installed Tesseract application.
+            image_bytes = _render_page_png(page)
+            ocr_text = _try_rapidocr(image_bytes)
+            if _is_useful_page_text(ocr_text):
+                pages.append(_page_block(page_number, ocr_text))
+                continue
 
-            # 1c. rawdict walk (unusual encodings)
-            if not page_text.strip():
-                try:
-                    raw   = page.get_text("rawdict")
-                    words = []
-                    for block in raw.get("blocks", []):
-                        for line in block.get("lines", []):
-                            for span in line.get("spans", []):
-                                w = span.get("text", "").strip()
-                                if w:
-                                    words.append(w)
-                    page_text = " ".join(words)
-                except Exception:
-                    pass
+            # 3) Tesseract remains an additional local OCR fallback when present.
+            ocr_text = _try_tesseract_ocr(image_bytes)
+            if _is_useful_page_text(ocr_text):
+                pages.append(_page_block(page_number, ocr_text))
+                continue
 
-            if page_text.strip():
-                parts.append(page_text.strip())
+            # 4) Vision OCR is the final fallback for difficult photo pages.
+            vision_text = _try_groq_vision_page(image_bytes, page_number)
+            if _is_useful_page_text(vision_text):
+                pages.append(_page_block(page_number, vision_text))
+            else:
+                print(f"[OCR] No readable text found on page {page_number}")
 
+        return _clean("\n\n".join(pages))
+    finally:
         pdf.close()
-        return "\n\n".join(parts)
-
-    except Exception as e:
-        print(f"[PyMuPDF] {e}")
-        return ""
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# STRATEGY 2 — pdfplumber
+# PAGE TEXT + IMAGE HELPERS
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _try_pdfplumber(raw_bytes: bytes) -> str:
+def _extract_embedded_page_text(page) -> str:
+    """Read normal PDF text, including common column/block encodings."""
     try:
-        import pdfplumber
+        text = page.get_text("text").strip()
+        if text:
+            return text
 
-        parts = []
-        with pdfplumber.open(io.BytesIO(raw_bytes)) as pdf:
-            for page in pdf.pages:
-                t = page.extract_text()
-                if t and t.strip():
-                    parts.append(t.strip())
-                    continue
+        blocks = page.get_text("blocks")
+        text = "\n".join(
+            block[4].strip() for block in blocks
+            if len(block) > 4 and isinstance(block[4], str) and block[4].strip()
+        )
+        if text:
+            return text
 
-                # Table extraction for grid-format reports
-                try:
-                    for table in page.extract_tables():
-                        for row in table:
-                            row_text = "  |  ".join(
-                                str(cell).strip() for cell in row if cell
-                            )
-                            if row_text.strip():
-                                parts.append(row_text)
-                except Exception:
-                    pass
-
-        return "\n\n".join(parts)
-
-    except ImportError:
+        raw = page.get_text("rawdict")
+        words = []
+        for block in raw.get("blocks", []):
+            for line in block.get("lines", []):
+                for span in line.get("spans", []):
+                    value = span.get("text", "").strip()
+                    if value:
+                        words.append(value)
+        return " ".join(words)
+    except Exception as exc:
+        print(f"[PDF text] {exc}")
         return ""
-    except Exception as e:
-        print(f"[pdfplumber] {e}")
+
+
+def _render_page_png(page) -> bytes:
+    """Render at OCR-friendly quality while keeping request payloads practical."""
+    matrix = fitz.Matrix(2.5, 2.5)  # 180 DPI
+    pixmap = page.get_pixmap(matrix=matrix, colorspace=fitz.csRGB, alpha=False)
+    return pixmap.tobytes("png")
+
+
+_RAPID_OCR = None
+
+
+def _try_rapidocr(image_bytes: bytes) -> str:
+    """OCR scanned/photo PDF pages without requiring the Tesseract desktop app."""
+    global _RAPID_OCR
+    try:
+        from rapidocr_onnxruntime import RapidOCR
+
+        if _RAPID_OCR is None:
+            _RAPID_OCR = RapidOCR()
+        result, _ = _RAPID_OCR(image_bytes)
+        if not result:
+            return ""
+        # Each result row is [bounding_box, recognised_text, confidence].
+        lines = [str(row[1]).strip() for row in result if len(row) >= 2 and str(row[1]).strip()]
+        return "\n".join(lines)
+    except Exception as exc:
+        print(f"[Built-in OCR unavailable/failed] {exc}")
+        return ""
+
+
+def _try_tesseract_ocr(image_bytes: bytes) -> str:
+    """Use local OCR when its optional executable is available."""
+    try:
+        import pytesseract
+        from PIL import Image, ImageEnhance, ImageOps
+
+        image = Image.open(io.BytesIO(image_bytes)).convert("L")
+        image = ImageOps.autocontrast(image)
+        image = ImageEnhance.Contrast(image).enhance(1.5)
+        return pytesseract.image_to_string(image, config="--oem 3 --psm 6")
+    except Exception as exc:
+        # No local OCR is fine: Groq Vision below remains the automatic fallback.
+        print(f"[Tesseract OCR unavailable/failed] {exc}")
         return ""
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# STRATEGY 3 — Groq LLaMA-4 Vision (scanned / image PDFs)
+# VISION OCR FALLBACK
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _try_groq_vision(raw_bytes: bytes) -> str:
-    """
-    Render each PDF page as a PNG image, send to Groq Vision AI,
-    ask it to extract ALL text from the medical report image.
-    Works on scanned PDFs, image-only PDFs, hand-typed reports — anything.
-    """
+def _try_groq_vision_page(image_bytes: bytes, page_number: int) -> str:
+    """Transcribe an image-only report page using Groq Vision."""
     try:
         from groq import Groq
-        from PIL import Image
 
         api_key = os.getenv("GROQ_API_KEY", "")
         if not api_key:
-            print("[Vision] GROQ_API_KEY not set")
+            print("[Vision OCR] GROQ_API_KEY is not set")
             return ""
 
+        encoded = base64.b64encode(image_bytes).decode("utf-8")
         client = Groq(api_key=api_key)
-        pdf    = fitz.open(stream=raw_bytes, filetype="pdf")
-        parts  = []
-
-        for page_num, page in enumerate(pdf):
-            try:
-                # Render page at 200 DPI as PNG
-                mat = fitz.Matrix(200 / 72, 200 / 72)
-                pix = page.get_pixmap(matrix=mat, colorspace=fitz.csRGB)
-
-                img_bytes = pix.tobytes("png")
-
-                # Encode to base64 for Groq Vision API
-                b64_image = base64.b64encode(img_bytes).decode("utf-8")
-
-                response = client.chat.completions.create(
-                    model="meta-llama/llama-4-scout-17b-16e-instruct",
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": [
-                                {
-                                    "type": "text",
-                                    "text": (
-                                        "This is a scanned medical report / lab report image. "
-                                        "Extract ALL text from this image exactly as it appears. "
-                                        "Include every test name, value, unit, reference range, "
-                                        "patient name, date, and any other text you can see. "
-                                        "Output only the extracted text, nothing else."
-                                    )
-                                },
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": f"data:image/png;base64,{b64_image}"
-                                    }
-                                }
-                            ]
-                        }
-                    ],
-                    max_tokens=2000,
-                    temperature=0
-                )
-
-                page_text = response.choices[0].message.content.strip()
-                if page_text:
-                    parts.append(f"[Page {page_num + 1}]\n{page_text}")
-                    print(f"[Vision] Page {page_num + 1}: extracted {len(page_text)} chars")
-
-            except Exception as page_err:
-                print(f"[Vision] Page {page_num + 1} error: {page_err}")
-
-        pdf.close()
-        return "\n\n".join(parts)
-
-    except Exception as e:
-        print(f"[Vision] Fatal error: {e}")
+        response = client.chat.completions.create(
+            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            messages=[{
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": (
+                            "Transcribe this medical-report page faithfully. Extract every "
+                            "visible test name, result, unit, reference range, flag, date, "
+                            "and clinical note. Preserve rows and values as clearly as possible. "
+                            "Do not interpret, diagnose, summarise, or invent any data. "
+                            "Return only the transcription."
+                        ),
+                    },
+                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded}"}},
+                ],
+            }],
+            temperature=0,
+            max_tokens=2500,
+        )
+        text = (response.choices[0].message.content or "").strip()
+        if text:
+            print(f"[Vision OCR] Page {page_number}: {len(text)} characters extracted")
+        return text
+    except Exception as exc:
+        print(f"[Vision OCR] Page {page_number} failed: {exc}")
         return ""
 
 
@@ -223,14 +203,17 @@ def _try_groq_vision(raw_bytes: bytes) -> str:
 # HELPERS
 # ─────────────────────────────────────────────────────────────────────────────
 
-def _is_good(text: str, min_chars: int = 80) -> bool:
-    return bool(text) and len(text.strip()) >= min_chars
+def _is_useful_page_text(text: str) -> bool:
+    # A short lab slip can still be valid, so do not require the old 80 characters.
+    return bool(text and len(text.strip()) >= 12)
+
+
+def _page_block(page_number: int, text: str) -> str:
+    return f"[Page {page_number}]\n{text.strip()}"
 
 
 def _clean(text: str) -> str:
-    if not text:
-        return ""
-    text = re.sub(r"[ \t]{2,}", " ", text)
+    text = re.sub(r"[ \t]{2,}", " ", text or "")
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
 

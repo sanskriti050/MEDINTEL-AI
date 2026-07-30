@@ -7,3 +7,6 @@ pymupdf
 pillow
 reportlab
 pytesseract
+
+# OCR for scanned/photo-based PDFs; no separate Tesseract installation needed
+rapidocr-onnxruntime

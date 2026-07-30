@@ -16,7 +16,14 @@ st.set_page_config(
 )
 load_css()
 
-st.sidebar.title("🏥 MedIntel AI")
+st.sidebar.markdown("""
+<div class="sidebar-brand">
+  <h2>🩺&nbsp; MedIntel AI</h2>
+  <p>Intelligent healthcare guidance,<br>designed to help you understand your<br>health with clarity.</p>
+</div>
+<hr class="sidebar-rule">
+<div class="sidebar-section-title">HEALTHCARE TOOLS</div>
+""", unsafe_allow_html=True)
 
 page = st.sidebar.radio(
     "Navigation",
