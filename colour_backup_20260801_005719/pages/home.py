@@ -21,12 +21,12 @@ HEALTH_TIPS = [
 ]
 
 FEATURES = [
-    ("📄", "Report Analyzer",   "Upload any blood test, thyroid, lipid, kidney, liver or X-ray PDF and get instant AI analysis.", "#B8664B"),
-    ("🩺", "Symptom Checker",   "Describe your symptoms and get possible diagnoses, severity, home remedies and doctor recommendations.", "#A56655"),
-    ("💊", "Medicine Guide",    "Search any medicine — Indian or international — and get complete dosage, side effects and interaction info.", "#71845E"),
-    ("🥗", "Diet Planner",      "Get a personalized meal plan based on your age, weight, health goal and existing medical conditions.", "#B77A3B"),
-    ("📊", "Health Dashboard",  "Visualize your health score trends, report history and key health metrics all in one place.", "#B94C46"),
-    ("ℹ️",  "About",            "Learn about the technology powering MedIntel AI and important usage disclaimers.", "#A56E55"),
+    ("📄", "Report Analyzer",   "Upload any blood test, thyroid, lipid, kidney, liver or X-ray PDF and get instant AI analysis.", "#4CA9EE"),
+    ("🩺", "Symptom Checker",   "Describe your symptoms and get possible diagnoses, severity, home remedies and doctor recommendations.", "#4CA9EE"),
+    ("💊", "Medicine Guide",    "Search any medicine — Indian or international — and get complete dosage, side effects and interaction info.", "#5ECD81"),
+    ("🥗", "Diet Planner",      "Get a personalized meal plan based on your age, weight, health goal and existing medical conditions.", "#238878"),
+    ("📊", "Health Dashboard",  "Visualize your health score trends, report history and key health metrics all in one place.", "#238878"),
+    ("ℹ️",  "About",            "Learn about the technology powering MedIntel AI and important usage disclaimers.", "#4CA9EE"),
 ]
 
 STATS = [
@@ -48,8 +48,8 @@ def show_home():
     # ── Hero Section ─────────────────────────────────────────────────────────
     st.markdown("""
     <div style="
-        background: linear-gradient(135deg, #4A332B 0%, #6B493B 50%, #4A332B 100%);
-        border: 1px solid #B8664B;
+        background: linear-gradient(135deg, #4CA9EE 0%, #4CA9EE 50%, #4CA9EE 100%);
+        border: 1px solid #4CA9EE;
         border-radius: 20px;
         padding: 48px 36px 40px 36px;
         text-align: center;
@@ -59,28 +59,28 @@ def show_home():
     ">
         <div style="
             position:absolute;top:0;left:0;right:0;bottom:0;
-            background: radial-gradient(ellipse at 30% 50%, rgba(184,102,75,0.12) 0%, transparent 60%),
-                        radial-gradient(ellipse at 70% 50%, rgba(165,102,85,0.10) 0%, transparent 60%);
+            background: radial-gradient(ellipse at 30% 50%, rgba(76,169,238,0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse at 70% 50%, rgba(76,169,238,0.1) 0%, transparent 60%);
             pointer-events:none;
         "></div>
         <div style="font-size:3.5rem;margin-bottom:12px;">🏥</div>
         <h1 style="
-            color: #FFF9F5;
+            color: #3E2D27;
             font-size: 2.8rem;
             font-weight: 800;
             margin: 0 0 10px 0;
             letter-spacing: -0.5px;
         ">MedIntel AI</h1>
         <p style="
-            color: #7B4A3D;
+            color: #4CA9EE;
             font-size: 1.2rem;
             margin: 0 0 20px 0;
             font-weight: 400;
         ">Your AI-Powered Intelligent Healthcare Assistant</p>
         <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">
-            <span style="background:rgba(184,102,75,0.25);color:#7B4A3D;padding:6px 16px;border-radius:20px;font-size:0.85rem;border:1px solid #B8664B;">🤖 Groq LLaMA 3.3 70B</span>
-            <span style="background:rgba(113,132,94,0.25);color:#5F6F4F;padding:6px 16px;border-radius:20px;font-size:0.85rem;border:1px solid #71845E;">⚡ Real-time Analysis</span>
-            <span style="background:rgba(165,102,85,0.25);color:#8C5143;padding:6px 16px;border-radius:20px;font-size:0.85rem;border:1px solid #A56655;">🔒 Privacy First</span>
+            <span style="background:rgba(76,169,238,0.3);color:#4CA9EE;padding:6px 16px;border-radius:20px;font-size:0.85rem;border:1px solid #4CA9EE;">🤖 Groq LLaMA 3.3 70B</span>
+            <span style="background:rgba(94,205,129,0.3);color:#5ECD81;padding:6px 16px;border-radius:20px;font-size:0.85rem;border:1px solid #5ECD81;">⚡ Real-time Analysis</span>
+            <span style="background:rgba(76,169,238,0.3);color:#4CA9EE;padding:6px 16px;border-radius:20px;font-size:0.85rem;border:1px solid #4CA9EE;">🔒 Privacy First</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -93,13 +93,13 @@ def show_home():
         with cols[i]:
             st.markdown(f"""
             <div style="
-                background:#FFF9F5;border:1px solid #DCCBC0;border-radius:14px;
+                background:#B2B7BB;border:1px solid #238878;border-radius:14px;
                 padding:18px 14px;text-align:center;
             ">
                 <div style="font-size:1.8rem;">{icon}</div>
-                <h2 style="color:#A9573F;margin:6px 0 2px 0;font-size:1.6rem;">{value}</h2>
+                <h2 style="color:#4CA9EE;margin:6px 0 2px 0;font-size:1.6rem;">{value}</h2>
                 <p style="color:#3E2D27;font-size:0.9rem;font-weight:600;margin:0 0 2px 0;">{label}</p>
-                <p style="color:#7A665D;font-size:0.78rem;margin:0;">{sub}</p>
+                <p style="color:#238878;font-size:0.78rem;margin:0;">{sub}</p>
             </div>
             """, unsafe_allow_html=True)
 
@@ -115,21 +115,21 @@ def show_home():
         fig = go.Figure(go.Indicator(
             mode="gauge+number+delta",
             value=87,
-            delta={"reference": 80, "valueformat": ".0f", "increasing": {"color": "#71845E"}},
+            delta={"reference": 80, "valueformat": ".0f", "increasing": {"color": "#5ECD81"}},
             title={"text": "Health Score", "font": {"color": "white", "size": 16}},
             number={"font": {"color": "white", "size": 44}, "suffix": "/100"},
             gauge={
                 "axis": {"range": [0, 100], "tickcolor": "white", "tickfont": {"color": "white"}},
-                "bar": {"color": "#B8664B", "thickness": 0.25},
-                "bgcolor": "#FFF9F5",
-                "bordercolor": "#C9B6AA",
+                "bar": {"color": "#4CA9EE", "thickness": 0.25},
+                "bgcolor": "#B2B7BB",
+                "bordercolor": "#238878",
                 "steps": [
-                    {"range": [0, 40],  "color": "#F3D7D0"},
-                    {"range": [40, 70], "color": "#F4E4CF"},
-                    {"range": [70, 100], "color": "#E4F0E1"}
+                    {"range": [0, 40],  "color": "#238878"},
+                    {"range": [40, 70], "color": "#238878"},
+                    {"range": [70, 100], "color": "#5ECD81"}
                 ],
                 "threshold": {
-                    "line": {"color": "#71845E", "width": 3},
+                    "line": {"color": "#5ECD81", "width": 3},
                     "thickness": 0.75,
                     "value": 87
                 }
@@ -138,7 +138,7 @@ def show_home():
         fig.update_layout(
             height=280,
             margin=dict(t=40, b=0, l=20, r=20),
-            paper_bgcolor="rgba(0,0,0,0)"
+            paper_bgcolor="rgba(178,183,187,0)"
         )
         st.plotly_chart(fig, use_container_width=True)
 
@@ -151,12 +151,12 @@ def show_home():
     with right:
         st.subheader("👋 Welcome to MedIntel AI")
         st.markdown("""
-        <div style="color:#4A3932;font-size:1rem;line-height:1.8;">
+        <div style="color:#238878;font-size:1rem;line-height:1.8;">
         MedIntel AI uses advanced artificial intelligence to help you understand your health better — without the jargon.
         <br><br>
-        Whether you have a <b style="color:#A9573F;">blood report</b> you don't understand, 
-        <b style="color:#8C5143;">symptoms</b> you're worried about, or want to know about a 
-        <b style="color:#5F7653;">medicine</b> your doctor prescribed — we've got you covered.
+        Whether you have a <b style="color:#4CA9EE;">blood report</b> you don't understand, 
+        <b style="color:#4CA9EE;">symptoms</b> you're worried about, or want to know about a 
+        <b style="color:#5ECD81;">medicine</b> your doctor prescribed — we've got you covered.
         </div>
         """, unsafe_allow_html=True)
 
@@ -171,19 +171,19 @@ def show_home():
         trend_fig = px.line(
             trend_data, x="Week", y="Score",
             markers=True,
-            color_discrete_sequence=["#B8664B"]
+            color_discrete_sequence=["#4CA9EE"]
         )
         trend_fig.update_traces(
             line=dict(width=3),
-            marker=dict(size=8, color="#A9573F")
+            marker=dict(size=8, color="#4CA9EE")
         )
         trend_fig.update_layout(
             height=200,
             margin=dict(t=10, b=10, l=10, r=10),
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-            yaxis=dict(range=[60, 100], gridcolor="#E4D6CD", tickfont=dict(color="white")),
-            xaxis=dict(gridcolor="#E4D6CD", tickfont=dict(color="white")),
+            paper_bgcolor="rgba(178,183,187,0)",
+            plot_bgcolor="rgba(178,183,187,0)",
+            yaxis=dict(range=[60, 100], gridcolor="#B2B7BB", tickfont=dict(color="white")),
+            xaxis=dict(gridcolor="#B2B7BB", tickfont=dict(color="white")),
             font=dict(color="white"),
             showlegend=False
         )
@@ -203,8 +203,8 @@ def show_home():
         with all_cols[i]:
             st.markdown(f"""
             <div style="
-                background:#FFF9F5;
-                border:1px solid #DCCBC0;
+                background:#B2B7BB;
+                border:1px solid #238878;
                 border-top:3px solid {color};
                 border-radius:14px;
                 padding:20px 16px;
@@ -213,7 +213,7 @@ def show_home():
             ">
                 <div style="font-size:1.8rem;margin-bottom:8px;">{icon}</div>
                 <h4 style="color:#3E2D27;margin:0 0 6px 0;font-size:1rem;">{title}</h4>
-                <p style="color:#806C63;font-size:0.82rem;margin:0;line-height:1.5;">{desc}</p>
+                <p style="color:#238878;font-size:0.82rem;margin:0;line-height:1.5;">{desc}</p>
             </div>
             """, unsafe_allow_html=True)
 
@@ -226,21 +226,21 @@ def show_home():
 
     h1, h2, h3, h4 = st.columns(4)
     steps = [
-        ("1️⃣", "#B8664B", "Upload / Input",    "Upload a PDF report, type symptoms, or search a medicine name"),
-        ("2️⃣", "#A56655", "AI Processes",       "Groq's LLaMA 3.3 70B model analyzes your input in real-time"),
-        ("3️⃣", "#71845E", "Get Insights",        "Receive health scores, diagnoses, recommendations, and advice"),
-        ("4️⃣", "#B77A3B", "Take Action",          "Download your report, follow diet tips, or consult your doctor"),
+        ("1️⃣", "#4CA9EE", "Upload / Input",    "Upload a PDF report, type symptoms, or search a medicine name"),
+        ("2️⃣", "#4CA9EE", "AI Processes",       "Groq's LLaMA 3.3 70B model analyzes your input in real-time"),
+        ("3️⃣", "#5ECD81", "Get Insights",        "Receive health scores, diagnoses, recommendations, and advice"),
+        ("4️⃣", "#238878", "Take Action",          "Download your report, follow diet tips, or consult your doctor"),
     ]
     for col, (num, color, title, desc) in zip([h1, h2, h3, h4], steps):
         with col:
             st.markdown(f"""
             <div style="
-                background:#FFF9F5;border:1px solid #DCCBC0;border-radius:14px;
+                background:#B2B7BB;border:1px solid #238878;border-radius:14px;
                 padding:20px 14px;text-align:center;margin-bottom:8px;
             ">
                 <div style="font-size:2rem;">{num}</div>
                 <h4 style="color:{color};margin:8px 0 6px 0;font-size:0.95rem;">{title}</h4>
-                <p style="color:#806C63;font-size:0.8rem;margin:0;line-height:1.5;">{desc}</p>
+                <p style="color:#238878;font-size:0.8rem;margin:0;line-height:1.5;">{desc}</p>
             </div>
             """, unsafe_allow_html=True)
 
@@ -252,16 +252,16 @@ def show_home():
     st.subheader("💡 Health Tip of the Day")
     st.markdown(f"""
     <div style="
-        background: linear-gradient(135deg, #E4F0E1 0%, #F1E1D8 100%);
-        border: 1px solid #71845E;
+        background: linear-gradient(135deg, #5ECD81 0%, #4CA9EE 100%);
+        border: 1px solid #5ECD81;
         border-radius: 14px;
         padding: 24px 28px;
     ">
         <div style="display:flex;align-items:center;gap:14px;">
             <div style="font-size:2.5rem;">{tip_icon}</div>
             <div>
-                <p style="color:#71905E;font-size:0.85rem;font-weight:700;margin:0 0 4px 0;text-transform:uppercase;letter-spacing:1px;">{tip_cat}</p>
-                <p style="color:#42533A;font-size:1.05rem;margin:0;line-height:1.6;">{tip_text}</p>
+                <p style="color:#5ECD81;font-size:0.85rem;font-weight:700;margin:0 0 4px 0;text-transform:uppercase;letter-spacing:1px;">{tip_cat}</p>
+                <p style="color:#238878;font-size:1.05rem;margin:0;line-height:1.6;">{tip_text}</p>
             </div>
         </div>
     </div>
@@ -273,10 +273,10 @@ def show_home():
     # ── Disclaimer ───────────────────────────────────────────────────────────
     st.markdown("""
     <div style="
-        background:#F5E5D6;border:1px solid #8F5A35;border-radius:12px;
+        background:#238878;border:1px solid #238878;border-radius:12px;
         padding:16px 20px;text-align:center;
     ">
-        <p style="color:#8B6228;font-size:0.85rem;margin:0;">
+        <p style="color:#238878;font-size:0.85rem;margin:0;">
         ⚠️ <b>Medical Disclaimer:</b> MedIntel AI is for <b>informational purposes only</b> and does <b>not</b> replace professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider.
         </p>
     </div>

@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import json
+from components.hero import show_hero, show_notice
 from dotenv import load_dotenv
 from groq import Groq
 
@@ -99,10 +100,9 @@ Return this exact JSON structure:
 
 
 def show_symptom():
-    st.title("🩺 AI Symptom Checker")
-    st.caption("Describe your symptoms and get a detailed AI-powered medical assessment.")
-
-    st.warning("⚠️ This tool is for informational purposes only and does NOT replace professional medical advice. Always consult a qualified doctor.")
+    show_hero("🩺 Symptom Checker", "Share what you are experiencing and receive a structured health assessment.", "GUIDED HEALTH CHECK")
+    show_notice("A helpful first step", "This is educational guidance, not a diagnosis. For severe or worsening symptoms, contact a qualified doctor.", "⚕️")
+    st.markdown("### Tell us what you are feeling")
 
     # Session state
     if "symptom_result" not in st.session_state:

@@ -7,13 +7,12 @@ import json
 from utils import extract_text_from_pdf, detect_report_type
 from analyzer import analyze_medical_report
 from dashboard_connector import save_report_to_dashboard
-from components.hero import show_hero, show_notice
 
 
 def show_report():
 
-    show_hero("📄 Medical Report Analyzer", "Turn complex lab reports into a clear, easy-to-read health summary.", "AI-ASSISTED REPORT REVIEW")
-    show_notice("Private by design", "Your report is used only to create your analysis. Upload a PDF to begin.", "🔒")
+    st.title("📄 AI Medical Report Analyzer")
+    st.caption("Upload any medical report PDF — CBC, Lipid, Thyroid, Kidney, Liver, Diabetes, Urine, Radiology, and more.")
 
     # ── Session state ────────────────────────────────────────
     for key in ("report_result", "report_text", "report_type", "last_filename"):

@@ -1,7 +1,7 @@
 import streamlit as st
 import os
 import json
-from components.hero import show_hero, show_notice
+from html import escape
 from dotenv import load_dotenv
 from groq import Groq
 
@@ -156,9 +156,10 @@ Return EXACTLY this JSON:
 
 
 def show_medicine():
-    show_hero("💊 Medicine Guide", "Understand medicines, common uses, precautions and interactions in one clear view.", "SMART MEDICINE LIBRARY")
-    show_notice("Please use safely", "Always follow the prescription and dosage given by your doctor or pharmacist.", "🛡️")
-    st.markdown("### Search your medicine")
+    st.title("💊 Medicine Guide")
+    st.caption("Search any medicine — Indian brands, generic names, salts, supplements, antibiotics, and more.")
+
+    st.warning("⚠️ For informational purposes only. Always follow your doctor's prescription.")
 
     if "medicine_result" not in st.session_state:
         st.session_state.medicine_result = None
@@ -195,22 +196,63 @@ def show_medicine():
 
     # ── Header ─────────────────────────────────────────────────
     st.markdown(
-        f"""<div style="background:#172033;border:1px solid #2563EB;border-radius:14px;padding:20px 24px;margin-bottom:16px;">
+        f"""<div style="background:#B2B7BB;border:1px solid #4CA9EE;border-radius:14px;padding:20px 24px;margin-bottom:16px;">
         <h2 style="color:white;margin:0 0 4px 0;">💊 {info.get('name', medicine)}</h2>
-        <p style="color:#94A3B8;margin:0;">
-            <b style="color:#60A5FA;">Generic:</b> {info.get('generic_name','N/A')} &nbsp;|&nbsp;
-            <b style="color:#60A5FA;">Manufacturer:</b> {info.get('manufacturer','N/A')}
+        <p style="color:#238878;margin:0;">
+            <b style="color:#4CA9EE;">Generic:</b> {info.get('generic_name','N/A')} &nbsp;|&nbsp;
+            <b style="color:#4CA9EE;">Manufacturer:</b> {info.get('manufacturer','N/A')}
         </p>
         </div>""",
         unsafe_allow_html=True
     )
 
-    # ── Top metrics ─────────────────────────────────────────────
+    # ── Top medicine details ────────────────────────────────────
+    # Custom cards are used here instead of st.metric because Streamlit
+    # truncates long values with an ellipsis on narrow columns.
+    st.markdown("""
+        <style>
+        .medicine-detail-card {
+            background: #B2B7BB;
+            border: 1px solid #238878;
+            border-radius: 15px;
+            box-sizing: border-box;
+            min-height: 126px;
+            padding: 18px;
+        }
+        .medicine-detail-label {
+            color: #238878 !important;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        .medicine-detail-value {
+            color: #238878 !important;
+            font-size: clamp(0.95rem, 1.6vw, 1.35rem);
+            font-weight: 400;
+            line-height: 1.25;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            white-space: normal;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    def detail_card(column, label, value):
+        safe_label = escape(str(label))
+        safe_value = escape(str(value or "N/A"))
+        column.markdown(
+            f"""<div class="medicine-detail-card">
+                <div class="medicine-detail-label">{safe_label}</div>
+                <div class="medicine-detail-value">{safe_value}</div>
+            </div>""",
+            unsafe_allow_html=True,
+        )
+
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("🏷️ Drug Class", info.get("drug_class", "N/A"))
-    c2.metric("📋 Schedule", info.get("otc_or_prescription", "N/A"))
-    c3.metric("🤰 Pregnancy", info.get("pregnancy_category", "N/A"))
-    c4.metric("🍼 Breastfeeding", info.get("breastfeeding", "N/A"))
+    detail_card(c1, "🏷️ Drug Class", info.get("drug_class", "N/A"))
+    detail_card(c2, "📋 Schedule", info.get("otc_or_prescription", "N/A"))
+    detail_card(c3, "🤰 Pregnancy", info.get("pregnancy_category", "N/A"))
+    detail_card(c4, "🍼 Breastfeeding", info.get("breastfeeding", "N/A"))
 
     st.divider()
 
@@ -219,8 +261,8 @@ def show_medicine():
     if mechanism and mechanism not in ("N/A", "Information not available."):
         st.subheader("⚙️ How It Works")
         st.markdown(
-            f"""<div style="background:#0f2744;border-left:4px solid #60A5FA;border-radius:8px;
-            padding:14px 18px;color:#bfdbfe;line-height:1.7;">{mechanism}</div>""",
+            f"""<div style="background:#4CA9EE;border-left:4px solid #4CA9EE;border-radius:8px;
+            padding:14px 18px;color:#4CA9EE;line-height:1.7;">{mechanism}</div>""",
             unsafe_allow_html=True
         )
         st.divider()

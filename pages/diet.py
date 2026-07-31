@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import json
+from components.hero import show_hero, show_notice
 from dotenv import load_dotenv
 from groq import Groq
 
@@ -78,8 +79,9 @@ Rules:
 
 
 def show_diet():
-    st.title("🥗 AI Diet Planner")
-    st.caption("Get a personalized diet plan powered by AI based on your health profile.")
+    show_hero("🥗 Personal Diet Planner", "Create a practical food plan around your body, lifestyle and health goal.", "NUTRITION, MADE PERSONAL")
+    show_notice("Built around you", "Add your basic details below and receive a structured daily plan in seconds.", "✨")
+    st.markdown("### Your nutrition profile")
 
     with st.form("diet_form"):
         col1, col2 = st.columns(2)

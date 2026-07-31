@@ -25,22 +25,22 @@ def _avg_score(reports):
     return round(sum(r["score"] for r in reports) / len(reports), 1)
 
 def _risk_color(risk):
-    return {"Low": "#16A34A", "Moderate": "#F59E0B", "High": "#DC2626"}.get(risk, "#94A3B8")
+    return {"Low": "#5ECD81", "Moderate": "#238878", "High": "#238878"}.get(risk, "#238878")
 
 def _score_color(score):
-    if score >= 70: return "#16A34A"
-    if score >= 40: return "#F59E0B"
-    return "#DC2626"
+    if score >= 70: return "#5ECD81"
+    if score >= 40: return "#238878"
+    return "#238878"
 
 def _bmi(w, h):
     if h <= 0: return 0
     return round(w / (h / 100) ** 2, 1)
 
 def _bmi_label(bmi):
-    if bmi < 18.5: return "Underweight", "#60A5FA"
-    if bmi < 25:   return "Normal",      "#4ADE80"
-    if bmi < 30:   return "Overweight",  "#FBBF24"
-    return "Obese", "#F87171"
+    if bmi < 18.5: return "Underweight", "#4CA9EE"
+    if bmi < 25:   return "Normal",      "#5ECD81"
+    if bmi < 30:   return "Overweight",  "#238878"
+    return "Obese", "#238878"
 
 
 # ── Gauge chart ───────────────────────────────────────────────────────────────
@@ -55,18 +55,18 @@ def _gauge(value, title, height=260):
             "axis": {"range": [0, 100], "tickcolor": "white",
                      "tickfont": {"color": "white", "size": 10}},
             "bar": {"color": color, "thickness": 0.25},
-            "bgcolor": "#172033", "bordercolor": "#334155",
+            "bgcolor": "#B2B7BB", "bordercolor": "#238878",
             "steps": [
-                {"range": [0, 40],   "color": "#450a0a"},
-                {"range": [40, 70],  "color": "#451a03"},
-                {"range": [70, 100], "color": "#052e16"},
+                {"range": [0, 40],   "color": "#238878"},
+                {"range": [40, 70],  "color": "#238878"},
+                {"range": [70, 100], "color": "#5ECD81"},
             ],
             "threshold": {"line": {"color": color, "width": 3},
                           "thickness": 0.75, "value": value}
         }
     ))
     fig.update_layout(height=height, margin=dict(t=40, b=0, l=10, r=10),
-                      paper_bgcolor="rgba(0,0,0,0)")
+                      paper_bgcolor="rgba(178,183,187,0)")
     return fig
 
 
@@ -93,129 +93,130 @@ def show_dashboard():
 
         if not reports:
             st.markdown("""
-            <div style="background:#172033;border:1px dashed #334155;border-radius:16px;
+            <div style="background:#B2B7BB;border:1px dashed #238878;border-radius:16px;
             padding:48px;text-align:center;">
                 <div style="font-size:3rem;">📋</div>
-                <h3 style="color:white;margin:12px 0 8px 0;">No reports yet</h3>
-                <p style="color:#64748B;">
+                <h3 style="color:#3E2D27;margin:12px 0 8px 0;">No reports yet</h3>
+                <p style="color:#238878;">
                     Analyze a report on the <b>📄 Report Analyzer</b> page —
                     it will appear here automatically.<br>
                     Or go to <b>➕ Add Report</b> tab to log one manually.
                 </p>
             </div>
             """, unsafe_allow_html=True)
+            return
+
+        avg  = _avg_score(reports)
+        last = reports[-1]
+        risks = {"Low": 0, "Moderate": 0, "High": 0}
+        for r in reports:
+            risks[r["risk"]] = risks.get(r["risk"], 0) + 1
+
+        # ── Summary cards ────────────────────────────────────────────────
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("📄 Total Reports", len(reports), f"+{min(len(reports),1)} added")
+        c2.metric("❤️ Avg Health Score", f"{avg}/100",
+                  f"{'+' if avg >= 70 else ''}{round(avg-70,1)} vs target")
+        c3.metric("🏆 Latest Score", f"{last['score']}/100",
+                  f"{'↑' if len(reports)<2 else ('↑' if last['score']>=reports[-2]['score'] else '↓')}")
+        c4.metric("⚠️ Latest Risk", last["risk"],
+                  "🟢" if last["risk"]=="Low" else ("🟡" if last["risk"]=="Moderate" else "🔴"))
+
+        st.divider()
+
+        # ── Score trend chart ────────────────────────────────────────────
+        st.subheader("📈 Health Score Trend")
+        df_trend = pd.DataFrame(reports)
+        fig_trend = go.Figure()
+        fig_trend.add_trace(go.Scatter(
+            x=df_trend["date"], y=df_trend["score"],
+            mode="lines+markers+text",
+            text=df_trend["score"],
+            textposition="top center",
+            textfont=dict(color="white", size=11),
+            line=dict(color="#4CA9EE", width=3),
+            marker=dict(size=10, color=df_trend["score"].apply(_score_color),
+                        line=dict(color="white", width=2)),
+            fill="tozeroy",
+            fillcolor="rgba(76,169,238,0.08)",
+            hovertemplate="<b>%{x}</b><br>Score: %{y}/100<br>Type: " +
+                          df_trend["report_type"].astype(str) + "<extra></extra>"
+        ))
+        # target line at 70
+        fig_trend.add_hline(y=70, line_dash="dash", line_color="#5ECD81",
+                            annotation_text="Target (70)", annotation_font_color="#5ECD81")
+        fig_trend.update_layout(
+            height=320, plot_bgcolor="rgba(178,183,187,0)", paper_bgcolor="rgba(178,183,187,0)",
+            yaxis=dict(range=[0, 105], gridcolor="#B2B7BB", tickfont=dict(color="white")),
+            xaxis=dict(gridcolor="#B2B7BB", tickfont=dict(color="white"), tickangle=-30),
+            font=dict(color="white"), margin=dict(t=20, b=40),
+            showlegend=False
+        )
+        st.plotly_chart(fig_trend, use_container_width=True)
+        st.divider()
+
+        # ── Gauge + Risk pie ──────────────────────────────────────────────
+        g1, g2 = st.columns(2)
+        with g1:
+            st.subheader("❤️ Latest Health Score")
+            st.plotly_chart(_gauge(last["score"], "Health Score"), use_container_width=True)
+        with g2:
+            st.subheader("🧬 Risk Distribution")
+            risk_vals = [risks.get(k, 0) for k in ["Low", "Moderate", "High"]]
+            if sum(risk_vals) > 0:
+                fig_pie = px.pie(
+                    names=["Low Risk", "Moderate Risk", "High Risk"],
+                    values=risk_vals,
+                    color_discrete_sequence=["#5ECD81", "#238878", "#238878"],
+                    hole=0.55
+                )
+                fig_pie.update_layout(height=300, paper_bgcolor="rgba(178,183,187,0)",
+                                      font=dict(color="white"),
+                                      legend=dict(font=dict(color="white")),
+                                      margin=dict(t=20,b=20))
+                st.plotly_chart(fig_pie, use_container_width=True)
+        st.divider()
+
+        # ── Report type bar chart ─────────────────────────────────────────
+        st.subheader("📊 Reports by Type")
+        type_counts = df_trend["report_type"].value_counts().reset_index()
+        type_counts.columns = ["Report Type", "Count"]
+        fig_bar = px.bar(type_counts, x="Report Type", y="Count",
+                         color="Count",
+                         color_continuous_scale=["#4CA9EE", "#4CA9EE", "#4CA9EE"],
+                         text="Count")
+        fig_bar.update_traces(textposition="outside", textfont_color="white")
+        fig_bar.update_layout(
+            height=280, plot_bgcolor="rgba(178,183,187,0)", paper_bgcolor="rgba(178,183,187,0)",
+            xaxis=dict(tickfont=dict(color="white"), gridcolor="#B2B7BB"),
+            yaxis=dict(tickfont=dict(color="white"), gridcolor="#B2B7BB"),
+            font=dict(color="white"), margin=dict(t=20,b=40),
+            coloraxis_showscale=False, showlegend=False
+        )
+        st.plotly_chart(fig_bar, use_container_width=True)
+        st.divider()
+
+        # ── Full report history table ─────────────────────────────────────
+        st.subheader("📋 Report History")
+        display_df = df_trend[["date","report_type","score","risk","abnormal_count","notes"]].copy()
+        # Add source column if exists
+        if "source" in df_trend.columns:
+            display_df["source"] = df_trend["source"].map(
+                {"auto": "🤖 Auto", "manual": "✍️ Manual"}).fillna("✍️ Manual")
+            display_df = display_df[["date","report_type","score","risk","abnormal_count","source","notes"]]
+            display_df.columns = ["📅 Date","📄 Report Type","💯 Score","⚠️ Risk",
+                                   "🩸 Abnormal","📥 Source","📝 Notes"]
         else:
-            avg  = _avg_score(reports)
-            last = reports[-1]
-            risks = {"Low": 0, "Moderate": 0, "High": 0}
-            for r in reports:
-                risks[r["risk"]] = risks.get(r["risk"], 0) + 1
+            display_df.columns = ["📅 Date","📄 Report Type","💯 Score","⚠️ Risk",
+                                   "🩸 Abnormal Values","📝 Notes"]
+        display_df["⚠️ Risk"] = display_df["⚠️ Risk"].map(
+            {"Low":"🟢 Low", "Moderate":"🟡 Moderate", "High":"🔴 High"})
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
 
-            # ── Summary cards ────────────────────────────────────────────────
-            c1, c2, c3, c4 = st.columns(4)
-            c1.metric("📄 Total Reports", len(reports), f"+{min(len(reports),1)} added")
-            c2.metric("❤️ Avg Health Score", f"{avg}/100",
-                      f"{'+' if avg >= 70 else ''}{round(avg-70,1)} vs target")
-            c3.metric("🏆 Latest Score", f"{last['score']}/100",
-                      f"{'↑' if len(reports)<2 else ('↑' if last['score']>=reports[-2]['score'] else '↓')}")
-            c4.metric("⚠️ Latest Risk", last["risk"],
-                      "🟢" if last["risk"]=="Low" else ("🟡" if last["risk"]=="Moderate" else "🔴"))
-
-            st.divider()
-
-            # ── Score trend chart ────────────────────────────────────────────
-            st.subheader("📈 Health Score Trend")
-            df_trend = pd.DataFrame(reports)
-            fig_trend = go.Figure()
-            fig_trend.add_trace(go.Scatter(
-                x=df_trend["date"], y=df_trend["score"],
-                mode="lines+markers+text",
-                text=df_trend["score"],
-                textposition="top center",
-                textfont=dict(color="white", size=11),
-                line=dict(color="#2563EB", width=3),
-                marker=dict(size=10, color=df_trend["score"].apply(_score_color),
-                            line=dict(color="white", width=2)),
-                fill="tozeroy",
-                fillcolor="rgba(37,99,235,0.08)",
-                hovertemplate="<b>%{x}</b><br>Score: %{y}/100<br>Type: " +
-                              df_trend["report_type"].astype(str) + "<extra></extra>"
-            ))
-            # target line at 70
-            fig_trend.add_hline(y=70, line_dash="dash", line_color="#4ADE80",
-                                annotation_text="Target (70)", annotation_font_color="#4ADE80")
-            fig_trend.update_layout(
-                height=320, plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
-                yaxis=dict(range=[0, 105], gridcolor="#1e293b", tickfont=dict(color="white")),
-                xaxis=dict(gridcolor="#1e293b", tickfont=dict(color="white"), tickangle=-30),
-                font=dict(color="white"), margin=dict(t=20, b=40),
-                showlegend=False
-            )
-            st.plotly_chart(fig_trend, use_container_width=True)
-            st.divider()
-
-            # ── Gauge + Risk pie ──────────────────────────────────────────────
-            g1, g2 = st.columns(2)
-            with g1:
-                st.subheader("❤️ Latest Health Score")
-                st.plotly_chart(_gauge(last["score"], "Health Score"), use_container_width=True)
-            with g2:
-                st.subheader("🧬 Risk Distribution")
-                risk_vals = [risks.get(k, 0) for k in ["Low", "Moderate", "High"]]
-                if sum(risk_vals) > 0:
-                    fig_pie = px.pie(
-                        names=["Low Risk", "Moderate Risk", "High Risk"],
-                        values=risk_vals,
-                        color_discrete_sequence=["#16A34A", "#F59E0B", "#DC2626"],
-                        hole=0.55
-                    )
-                    fig_pie.update_layout(height=300, paper_bgcolor="rgba(0,0,0,0)",
-                                          font=dict(color="white"),
-                                          legend=dict(font=dict(color="white")),
-                                          margin=dict(t=20,b=20))
-                    st.plotly_chart(fig_pie, use_container_width=True)
-            st.divider()
-
-            # ── Report type bar chart ─────────────────────────────────────────
-            st.subheader("📊 Reports by Type")
-            type_counts = df_trend["report_type"].value_counts().reset_index()
-            type_counts.columns = ["Report Type", "Count"]
-            fig_bar = px.bar(type_counts, x="Report Type", y="Count",
-                             color="Count",
-                             color_continuous_scale=["#1e3a5f", "#2563EB", "#60A5FA"],
-                             text="Count")
-            fig_bar.update_traces(textposition="outside", textfont_color="white")
-            fig_bar.update_layout(
-                height=280, plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
-                xaxis=dict(tickfont=dict(color="white"), gridcolor="#1e293b"),
-                yaxis=dict(tickfont=dict(color="white"), gridcolor="#1e293b"),
-                font=dict(color="white"), margin=dict(t=20,b=40),
-                coloraxis_showscale=False, showlegend=False
-            )
-            st.plotly_chart(fig_bar, use_container_width=True)
-            st.divider()
-
-            # ── Full report history table ─────────────────────────────────────
-            st.subheader("📋 Report History")
-            display_df = df_trend[["date","report_type","score","risk","abnormal_count","notes"]].copy()
-            # Add source column if exists
-            if "source" in df_trend.columns:
-                display_df["source"] = df_trend["source"].map(
-                    {"auto": "🤖 Auto", "manual": "✍️ Manual"}).fillna("✍️ Manual")
-                display_df = display_df[["date","report_type","score","risk","abnormal_count","source","notes"]]
-                display_df.columns = ["📅 Date","📄 Report Type","💯 Score","⚠️ Risk",
-                                       "🩸 Abnormal","📥 Source","📝 Notes"]
-            else:
-                display_df.columns = ["📅 Date","📄 Report Type","💯 Score","⚠️ Risk",
-                                       "🩸 Abnormal Values","📝 Notes"]
-            display_df["⚠️ Risk"] = display_df["⚠️ Risk"].map(
-                {"Low":"🟢 Low", "Moderate":"🟡 Moderate", "High":"🔴 High"})
-            st.dataframe(display_df, use_container_width=True, hide_index=True)
-
-            # Delete last report
-            if st.button("🗑️ Delete Last Report", type="secondary"):
-                st.session_state.dash_reports.pop()
-                st.rerun()
+        # Delete last report
+        if st.button("🗑️ Delete Last Report", type="secondary"):
+            st.session_state.dash_reports.pop()
+            st.rerun()
 
 
     # ════════════════════════════════════════════════════════════════════════
@@ -299,12 +300,12 @@ def show_dashboard():
 
             # Define vitals to chart
             vitals_cfg = [
-                ("hemoglobin",  "Hemoglobin",        "g/dL",   11.0, 17.0, "#60A5FA"),
-                ("cholesterol", "Total Cholesterol",  "mg/dL",  0,    200,  "#F59E0B"),
-                ("blood_sugar", "Blood Sugar",        "mg/dL",  70,   100,  "#4ADE80"),
-                ("tsh",         "TSH",                "mIU/L",  0.4,  4.0,  "#A78BFA"),
-                ("creatinine",  "Creatinine",         "mg/dL",  0.7,  1.2,  "#F87171"),
-                ("vitamin_d",   "Vitamin D",          "ng/mL",  20,   50,   "#FBBF24"),
+                ("hemoglobin",  "Hemoglobin",        "g/dL",   11.0, 17.0, "#4CA9EE"),
+                ("cholesterol", "Total Cholesterol",  "mg/dL",  0,    200,  "#238878"),
+                ("blood_sugar", "Blood Sugar",        "mg/dL",  70,   100,  "#5ECD81"),
+                ("tsh",         "TSH",                "mIU/L",  0.4,  4.0,  "#4CA9EE"),
+                ("creatinine",  "Creatinine",         "mg/dL",  0.7,  1.2,  "#238878"),
+                ("vitamin_d",   "Vitamin D",          "ng/mL",  20,   50,   "#238878"),
             ]
 
             # Only show vitals that have at least 1 non-null entry
@@ -328,16 +329,16 @@ def show_dashboard():
                             status = "✅ Normal" if lo <= latest_val <= hi else \
                                      ("⬆️ High" if latest_val > hi else "⬇️ Low")
                             st.markdown(
-                                f"""<div style="background:#172033;border:1px solid #2B3648;
+                                f"""<div style="background:#B2B7BB;border:1px solid #238878;
                                 border-left:4px solid {color};border-radius:12px;
                                 padding:12px 16px;margin-bottom:4px;display:flex;
                                 justify-content:space-between;align-items:center;">
-                                <div><b style="color:white;font-size:1rem;">{label}</b>
-                                <p style="color:#64748B;font-size:0.78rem;margin:2px 0 0 0;">
+                                <div><b style="color:#3E2D27;font-size:1rem;">{label}</b>
+                                <p style="color:#238878;font-size:0.78rem;margin:2px 0 0 0;">
                                 Normal: {lo}–{hi} {unit}</p></div>
                                 <div style="text-align:right;">
                                 <b style="color:{color};font-size:1.4rem;">{latest_val} {unit}</b>
-                                <p style="color:#94A3B8;font-size:0.8rem;margin:2px 0 0 0;">{status}</p>
+                                <p style="color:#238878;font-size:0.8rem;margin:2px 0 0 0;">{status}</p>
                                 </div></div>""",
                                 unsafe_allow_html=True
                             )
@@ -348,19 +349,19 @@ def show_dashboard():
                                     mode="lines+markers",
                                     line=dict(color=color, width=2),
                                     marker=dict(size=7, color=color),
-                                    fill="tozeroy", fillcolor=f"rgba(37,99,235,0.06)"
+                                    fill="tozeroy", fillcolor=f"rgba(76,169,238,0.06)"
                                 ))
                                 fig_v.add_hrect(y0=lo, y1=hi,
-                                               fillcolor="rgba(74,222,128,0.07)",
+                                               fillcolor="rgba(94,205,129,0.07)",
                                                line_width=0,
                                                annotation_text="Normal range",
-                                               annotation_font_color="#4ADE80",
+                                               annotation_font_color="#5ECD81",
                                                annotation_position="top right")
                                 fig_v.update_layout(
                                     height=180, margin=dict(t=10,b=30,l=10,r=10),
-                                    plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
-                                    xaxis=dict(tickfont=dict(color="white", size=9), gridcolor="#1e293b"),
-                                    yaxis=dict(tickfont=dict(color="white", size=9), gridcolor="#1e293b"),
+                                    plot_bgcolor="rgba(178,183,187,0)", paper_bgcolor="rgba(178,183,187,0)",
+                                    xaxis=dict(tickfont=dict(color="white", size=9), gridcolor="#B2B7BB"),
+                                    yaxis=dict(tickfont=dict(color="white", size=9), gridcolor="#B2B7BB"),
                                     showlegend=False
                                 )
                                 st.plotly_chart(fig_v, use_container_width=True)
@@ -430,12 +431,12 @@ def show_dashboard():
                 fig_wt = px.line(wt_df, x="date", y="weight",
                                  title="⚖️ Weight Trend",
                                  markers=True,
-                                 color_discrete_sequence=["#FBBF24"])
+                                 color_discrete_sequence=["#238878"])
                 fig_wt.update_layout(
-                    height=220, plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
+                    height=220, plot_bgcolor="rgba(178,183,187,0)", paper_bgcolor="rgba(178,183,187,0)",
                     font=dict(color="white"), margin=dict(t=40,b=30,l=10,r=10),
-                    xaxis=dict(gridcolor="#1e293b", tickfont=dict(color="white")),
-                    yaxis=dict(gridcolor="#1e293b", tickfont=dict(color="white")),
+                    xaxis=dict(gridcolor="#B2B7BB", tickfont=dict(color="white")),
+                    yaxis=dict(gridcolor="#B2B7BB", tickfont=dict(color="white")),
                     title_font_color="white"
                 )
                 st.plotly_chart(fig_wt, use_container_width=True)
@@ -491,25 +492,25 @@ def show_dashboard():
             bmi_lab, bmi_col = _bmi_label(bmi_val)
 
             st.markdown(f"""
-            <div style="background:#172033;border:1px solid #2563EB;border-radius:16px;
+            <div style="background:#B2B7BB;border:1px solid #4CA9EE;border-radius:16px;
             padding:24px 28px;">
-                <h3 style="color:white;margin:0 0 16px 0;">👤 {p.get('name','—')}</h3>
+                <h3 style="color:#3E2D27;margin:0 0 16px 0;">👤 {p.get('name','—')}</h3>
                 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;
                 flex-wrap:wrap;">
-                    <div><p style="color:#64748B;margin:0;font-size:0.8rem;">AGE</p>
-                    <b style="color:white;">{p.get('age','—')} yrs</b></div>
-                    <div><p style="color:#64748B;margin:0;font-size:0.8rem;">GENDER</p>
-                    <b style="color:white;">{p.get('gender','—')}</b></div>
-                    <div><p style="color:#64748B;margin:0;font-size:0.8rem;">BLOOD GROUP</p>
-                    <b style="color:#F87171;">{p.get('blood_group','—')}</b></div>
-                    <div><p style="color:#64748B;margin:0;font-size:0.8rem;">WEIGHT / HEIGHT</p>
-                    <b style="color:white;">{p.get('weight','—')} kg / {p.get('height','—')} cm</b></div>
-                    <div><p style="color:#64748B;margin:0;font-size:0.8rem;">BMI</p>
+                    <div><p style="color:#238878;margin:0;font-size:0.8rem;">AGE</p>
+                    <b style="color:#3E2D27;">{p.get('age','—')} yrs</b></div>
+                    <div><p style="color:#238878;margin:0;font-size:0.8rem;">GENDER</p>
+                    <b style="color:#3E2D27;">{p.get('gender','—')}</b></div>
+                    <div><p style="color:#238878;margin:0;font-size:0.8rem;">BLOOD GROUP</p>
+                    <b style="color:#238878;">{p.get('blood_group','—')}</b></div>
+                    <div><p style="color:#238878;margin:0;font-size:0.8rem;">WEIGHT / HEIGHT</p>
+                    <b style="color:#3E2D27;">{p.get('weight','—')} kg / {p.get('height','—')} cm</b></div>
+                    <div><p style="color:#238878;margin:0;font-size:0.8rem;">BMI</p>
                     <b style="color:{bmi_col};">{bmi_val} — {bmi_lab}</b></div>
-                    <div><p style="color:#64748B;margin:0;font-size:0.8rem;">CONDITIONS</p>
-                    <b style="color:#FBBF24;">{p.get('conditions','None') or 'None'}</b></div>
-                    <div><p style="color:#64748B;margin:0;font-size:0.8rem;">ALLERGIES</p>
-                    <b style="color:#F87171;">{p.get('allergies','None') or 'None'}</b></div>
+                    <div><p style="color:#238878;margin:0;font-size:0.8rem;">CONDITIONS</p>
+                    <b style="color:#238878;">{p.get('conditions','None') or 'None'}</b></div>
+                    <div><p style="color:#238878;margin:0;font-size:0.8rem;">ALLERGIES</p>
+                    <b style="color:#238878;">{p.get('allergies','None') or 'None'}</b></div>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -527,26 +528,26 @@ def show_dashboard():
                         "axis":{"range":[10,45],"tickcolor":"white",
                                 "tickfont":{"color":"white"}},
                         "bar":{"color":bmi_col},
-                        "bgcolor":"#172033","bordercolor":"#334155",
+                        "bgcolor":"#B2B7BB","bordercolor":"#238878",
                         "steps":[
-                            {"range":[10,18.5],"color":"#1e3a5f"},
-                            {"range":[18.5,25],"color":"#052e16"},
-                            {"range":[25,30],  "color":"#451a03"},
-                            {"range":[30,45],  "color":"#450a0a"},
+                            {"range":[10,18.5],"color":"#4CA9EE"},
+                            {"range":[18.5,25],"color":"#5ECD81"},
+                            {"range":[25,30],  "color":"#238878"},
+                            {"range":[30,45],  "color":"#238878"},
                         ]
                     }
                 ))
-                fig_bmi.update_layout(height=250, paper_bgcolor="rgba(0,0,0,0)",
+                fig_bmi.update_layout(height=250, paper_bgcolor="rgba(178,183,187,0)",
                                       margin=dict(t=40,b=0,l=10,r=10))
                 st.plotly_chart(fig_bmi, use_container_width=True)
 
             with c_bmi2:
                 st.markdown("""
                 <div style="margin-top:20px;">
-                <p style="color:#94A3B8;font-size:0.9rem;line-height:2;">
-                <span style="color:#60A5FA;">■</span> &lt;18.5 — Underweight<br>
-                <span style="color:#4ADE80;">■</span> 18.5–24.9 — Normal weight<br>
-                <span style="color:#FBBF24;">■</span> 25–29.9 — Overweight<br>
-                <span style="color:#F87171;">■</span> ≥30 — Obese
+                <p style="color:#238878;font-size:0.9rem;line-height:2;">
+                <span style="color:#4CA9EE;">■</span> &lt;18.5 — Underweight<br>
+                <span style="color:#5ECD81;">■</span> 18.5–24.9 — Normal weight<br>
+                <span style="color:#238878;">■</span> 25–29.9 — Overweight<br>
+                <span style="color:#238878;">■</span> ≥30 — Obese
                 </p></div>
                 """, unsafe_allow_html=True)

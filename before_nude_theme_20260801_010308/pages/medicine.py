@@ -1,7 +1,6 @@
 import streamlit as st
 import os
 import json
-from components.hero import show_hero, show_notice
 from dotenv import load_dotenv
 from groq import Groq
 
@@ -156,9 +155,10 @@ Return EXACTLY this JSON:
 
 
 def show_medicine():
-    show_hero("💊 Medicine Guide", "Understand medicines, common uses, precautions and interactions in one clear view.", "SMART MEDICINE LIBRARY")
-    show_notice("Please use safely", "Always follow the prescription and dosage given by your doctor or pharmacist.", "🛡️")
-    st.markdown("### Search your medicine")
+    st.title("💊 Medicine Guide")
+    st.caption("Search any medicine — Indian brands, generic names, salts, supplements, antibiotics, and more.")
+
+    st.warning("⚠️ For informational purposes only. Always follow your doctor's prescription.")
 
     if "medicine_result" not in st.session_state:
         st.session_state.medicine_result = None

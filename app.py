@@ -16,14 +16,8 @@ st.set_page_config(
 )
 load_css()
 
-st.sidebar.markdown("""
-<div class="sidebar-brand">
-  <h2>🩺&nbsp; MedIntel AI</h2>
-  <p>Intelligent healthcare guidance,<br>designed to help you understand your<br>health with clarity.</p>
-</div>
-<hr class="sidebar-rule">
-<div class="sidebar-section-title">HEALTHCARE TOOLS</div>
-""", unsafe_allow_html=True)
+st.sidebar.markdown("""<div class="mi-side-brand"><div>✦</div><span>MEDINTEL <b>AI</b></span><small>INTELLIGENT HEALTHCARE</small></div>""", unsafe_allow_html=True)
+st.sidebar.markdown("<p class='mi-side-label'>EXPLORE YOUR HEALTH</p>", unsafe_allow_html=True)
 
 page = st.sidebar.radio(
     "Navigation",
@@ -37,6 +31,9 @@ page = st.sidebar.radio(
         "ℹ About"
     ]
 )
+
+
+st.sidebar.markdown("""<div class="mi-side-footer">🔒 Your health journey, kept simple.<br><span>Information, not a medical diagnosis.</span></div>""", unsafe_allow_html=True)
 
 if page == "🏠 Home":
     show_home()

@@ -104,118 +104,119 @@ def show_dashboard():
                 </p>
             </div>
             """, unsafe_allow_html=True)
+            return
+
+        avg  = _avg_score(reports)
+        last = reports[-1]
+        risks = {"Low": 0, "Moderate": 0, "High": 0}
+        for r in reports:
+            risks[r["risk"]] = risks.get(r["risk"], 0) + 1
+
+        # ── Summary cards ────────────────────────────────────────────────
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("📄 Total Reports", len(reports), f"+{min(len(reports),1)} added")
+        c2.metric("❤️ Avg Health Score", f"{avg}/100",
+                  f"{'+' if avg >= 70 else ''}{round(avg-70,1)} vs target")
+        c3.metric("🏆 Latest Score", f"{last['score']}/100",
+                  f"{'↑' if len(reports)<2 else ('↑' if last['score']>=reports[-2]['score'] else '↓')}")
+        c4.metric("⚠️ Latest Risk", last["risk"],
+                  "🟢" if last["risk"]=="Low" else ("🟡" if last["risk"]=="Moderate" else "🔴"))
+
+        st.divider()
+
+        # ── Score trend chart ────────────────────────────────────────────
+        st.subheader("📈 Health Score Trend")
+        df_trend = pd.DataFrame(reports)
+        fig_trend = go.Figure()
+        fig_trend.add_trace(go.Scatter(
+            x=df_trend["date"], y=df_trend["score"],
+            mode="lines+markers+text",
+            text=df_trend["score"],
+            textposition="top center",
+            textfont=dict(color="white", size=11),
+            line=dict(color="#2563EB", width=3),
+            marker=dict(size=10, color=df_trend["score"].apply(_score_color),
+                        line=dict(color="white", width=2)),
+            fill="tozeroy",
+            fillcolor="rgba(37,99,235,0.08)",
+            hovertemplate="<b>%{x}</b><br>Score: %{y}/100<br>Type: " +
+                          df_trend["report_type"].astype(str) + "<extra></extra>"
+        ))
+        # target line at 70
+        fig_trend.add_hline(y=70, line_dash="dash", line_color="#4ADE80",
+                            annotation_text="Target (70)", annotation_font_color="#4ADE80")
+        fig_trend.update_layout(
+            height=320, plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
+            yaxis=dict(range=[0, 105], gridcolor="#1e293b", tickfont=dict(color="white")),
+            xaxis=dict(gridcolor="#1e293b", tickfont=dict(color="white"), tickangle=-30),
+            font=dict(color="white"), margin=dict(t=20, b=40),
+            showlegend=False
+        )
+        st.plotly_chart(fig_trend, use_container_width=True)
+        st.divider()
+
+        # ── Gauge + Risk pie ──────────────────────────────────────────────
+        g1, g2 = st.columns(2)
+        with g1:
+            st.subheader("❤️ Latest Health Score")
+            st.plotly_chart(_gauge(last["score"], "Health Score"), use_container_width=True)
+        with g2:
+            st.subheader("🧬 Risk Distribution")
+            risk_vals = [risks.get(k, 0) for k in ["Low", "Moderate", "High"]]
+            if sum(risk_vals) > 0:
+                fig_pie = px.pie(
+                    names=["Low Risk", "Moderate Risk", "High Risk"],
+                    values=risk_vals,
+                    color_discrete_sequence=["#16A34A", "#F59E0B", "#DC2626"],
+                    hole=0.55
+                )
+                fig_pie.update_layout(height=300, paper_bgcolor="rgba(0,0,0,0)",
+                                      font=dict(color="white"),
+                                      legend=dict(font=dict(color="white")),
+                                      margin=dict(t=20,b=20))
+                st.plotly_chart(fig_pie, use_container_width=True)
+        st.divider()
+
+        # ── Report type bar chart ─────────────────────────────────────────
+        st.subheader("📊 Reports by Type")
+        type_counts = df_trend["report_type"].value_counts().reset_index()
+        type_counts.columns = ["Report Type", "Count"]
+        fig_bar = px.bar(type_counts, x="Report Type", y="Count",
+                         color="Count",
+                         color_continuous_scale=["#1e3a5f", "#2563EB", "#60A5FA"],
+                         text="Count")
+        fig_bar.update_traces(textposition="outside", textfont_color="white")
+        fig_bar.update_layout(
+            height=280, plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
+            xaxis=dict(tickfont=dict(color="white"), gridcolor="#1e293b"),
+            yaxis=dict(tickfont=dict(color="white"), gridcolor="#1e293b"),
+            font=dict(color="white"), margin=dict(t=20,b=40),
+            coloraxis_showscale=False, showlegend=False
+        )
+        st.plotly_chart(fig_bar, use_container_width=True)
+        st.divider()
+
+        # ── Full report history table ─────────────────────────────────────
+        st.subheader("📋 Report History")
+        display_df = df_trend[["date","report_type","score","risk","abnormal_count","notes"]].copy()
+        # Add source column if exists
+        if "source" in df_trend.columns:
+            display_df["source"] = df_trend["source"].map(
+                {"auto": "🤖 Auto", "manual": "✍️ Manual"}).fillna("✍️ Manual")
+            display_df = display_df[["date","report_type","score","risk","abnormal_count","source","notes"]]
+            display_df.columns = ["📅 Date","📄 Report Type","💯 Score","⚠️ Risk",
+                                   "🩸 Abnormal","📥 Source","📝 Notes"]
         else:
-            avg  = _avg_score(reports)
-            last = reports[-1]
-            risks = {"Low": 0, "Moderate": 0, "High": 0}
-            for r in reports:
-                risks[r["risk"]] = risks.get(r["risk"], 0) + 1
+            display_df.columns = ["📅 Date","📄 Report Type","💯 Score","⚠️ Risk",
+                                   "🩸 Abnormal Values","📝 Notes"]
+        display_df["⚠️ Risk"] = display_df["⚠️ Risk"].map(
+            {"Low":"🟢 Low", "Moderate":"🟡 Moderate", "High":"🔴 High"})
+        st.dataframe(display_df, use_container_width=True, hide_index=True)
 
-            # ── Summary cards ────────────────────────────────────────────────
-            c1, c2, c3, c4 = st.columns(4)
-            c1.metric("📄 Total Reports", len(reports), f"+{min(len(reports),1)} added")
-            c2.metric("❤️ Avg Health Score", f"{avg}/100",
-                      f"{'+' if avg >= 70 else ''}{round(avg-70,1)} vs target")
-            c3.metric("🏆 Latest Score", f"{last['score']}/100",
-                      f"{'↑' if len(reports)<2 else ('↑' if last['score']>=reports[-2]['score'] else '↓')}")
-            c4.metric("⚠️ Latest Risk", last["risk"],
-                      "🟢" if last["risk"]=="Low" else ("🟡" if last["risk"]=="Moderate" else "🔴"))
-
-            st.divider()
-
-            # ── Score trend chart ────────────────────────────────────────────
-            st.subheader("📈 Health Score Trend")
-            df_trend = pd.DataFrame(reports)
-            fig_trend = go.Figure()
-            fig_trend.add_trace(go.Scatter(
-                x=df_trend["date"], y=df_trend["score"],
-                mode="lines+markers+text",
-                text=df_trend["score"],
-                textposition="top center",
-                textfont=dict(color="white", size=11),
-                line=dict(color="#2563EB", width=3),
-                marker=dict(size=10, color=df_trend["score"].apply(_score_color),
-                            line=dict(color="white", width=2)),
-                fill="tozeroy",
-                fillcolor="rgba(37,99,235,0.08)",
-                hovertemplate="<b>%{x}</b><br>Score: %{y}/100<br>Type: " +
-                              df_trend["report_type"].astype(str) + "<extra></extra>"
-            ))
-            # target line at 70
-            fig_trend.add_hline(y=70, line_dash="dash", line_color="#4ADE80",
-                                annotation_text="Target (70)", annotation_font_color="#4ADE80")
-            fig_trend.update_layout(
-                height=320, plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
-                yaxis=dict(range=[0, 105], gridcolor="#1e293b", tickfont=dict(color="white")),
-                xaxis=dict(gridcolor="#1e293b", tickfont=dict(color="white"), tickangle=-30),
-                font=dict(color="white"), margin=dict(t=20, b=40),
-                showlegend=False
-            )
-            st.plotly_chart(fig_trend, use_container_width=True)
-            st.divider()
-
-            # ── Gauge + Risk pie ──────────────────────────────────────────────
-            g1, g2 = st.columns(2)
-            with g1:
-                st.subheader("❤️ Latest Health Score")
-                st.plotly_chart(_gauge(last["score"], "Health Score"), use_container_width=True)
-            with g2:
-                st.subheader("🧬 Risk Distribution")
-                risk_vals = [risks.get(k, 0) for k in ["Low", "Moderate", "High"]]
-                if sum(risk_vals) > 0:
-                    fig_pie = px.pie(
-                        names=["Low Risk", "Moderate Risk", "High Risk"],
-                        values=risk_vals,
-                        color_discrete_sequence=["#16A34A", "#F59E0B", "#DC2626"],
-                        hole=0.55
-                    )
-                    fig_pie.update_layout(height=300, paper_bgcolor="rgba(0,0,0,0)",
-                                          font=dict(color="white"),
-                                          legend=dict(font=dict(color="white")),
-                                          margin=dict(t=20,b=20))
-                    st.plotly_chart(fig_pie, use_container_width=True)
-            st.divider()
-
-            # ── Report type bar chart ─────────────────────────────────────────
-            st.subheader("📊 Reports by Type")
-            type_counts = df_trend["report_type"].value_counts().reset_index()
-            type_counts.columns = ["Report Type", "Count"]
-            fig_bar = px.bar(type_counts, x="Report Type", y="Count",
-                             color="Count",
-                             color_continuous_scale=["#1e3a5f", "#2563EB", "#60A5FA"],
-                             text="Count")
-            fig_bar.update_traces(textposition="outside", textfont_color="white")
-            fig_bar.update_layout(
-                height=280, plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)",
-                xaxis=dict(tickfont=dict(color="white"), gridcolor="#1e293b"),
-                yaxis=dict(tickfont=dict(color="white"), gridcolor="#1e293b"),
-                font=dict(color="white"), margin=dict(t=20,b=40),
-                coloraxis_showscale=False, showlegend=False
-            )
-            st.plotly_chart(fig_bar, use_container_width=True)
-            st.divider()
-
-            # ── Full report history table ─────────────────────────────────────
-            st.subheader("📋 Report History")
-            display_df = df_trend[["date","report_type","score","risk","abnormal_count","notes"]].copy()
-            # Add source column if exists
-            if "source" in df_trend.columns:
-                display_df["source"] = df_trend["source"].map(
-                    {"auto": "🤖 Auto", "manual": "✍️ Manual"}).fillna("✍️ Manual")
-                display_df = display_df[["date","report_type","score","risk","abnormal_count","source","notes"]]
-                display_df.columns = ["📅 Date","📄 Report Type","💯 Score","⚠️ Risk",
-                                       "🩸 Abnormal","📥 Source","📝 Notes"]
-            else:
-                display_df.columns = ["📅 Date","📄 Report Type","💯 Score","⚠️ Risk",
-                                       "🩸 Abnormal Values","📝 Notes"]
-            display_df["⚠️ Risk"] = display_df["⚠️ Risk"].map(
-                {"Low":"🟢 Low", "Moderate":"🟡 Moderate", "High":"🔴 High"})
-            st.dataframe(display_df, use_container_width=True, hide_index=True)
-
-            # Delete last report
-            if st.button("🗑️ Delete Last Report", type="secondary"):
-                st.session_state.dash_reports.pop()
-                st.rerun()
+        # Delete last report
+        if st.button("🗑️ Delete Last Report", type="secondary"):
+            st.session_state.dash_reports.pop()
+            st.rerun()
 
 
     # ════════════════════════════════════════════════════════════════════════
