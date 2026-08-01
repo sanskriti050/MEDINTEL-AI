@@ -18,6 +18,19 @@ def load_css():
         background: radial-gradient(circle at 85% 4%, rgba(129,154,112,.18), transparent 28%), radial-gradient(circle at 8% 92%, rgba(193,142,87,.13), transparent 30%), var(--warm-bg);
         color: var(--ink);
     }
+    /* remove any default page margins/stripe and hide Streamlit header bar */
+    html, body, #root, .main, .block-container {
+        background: var(--warm-bg) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    header, [data-testid="stHeader"], [data-testid="stToolbar"], [role="banner"] {
+        display: none !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
     section[data-testid="stSidebar"] { background: linear-gradient(180deg,var(--warm-surface) 0%, var(--warm-bg) 100%); border-right:1px solid var(--warm-border); }
     section[data-testid="stSidebar"] * { color:var(--muted) !important; }
     section[data-testid="stSidebar"] .stRadio label { border:1px solid rgba(240,225,201,.14); border-radius:10px; padding:8px 10px; margin-bottom:5px; }
@@ -33,5 +46,18 @@ def load_css():
     div[data-baseweb="input"] > div,div[data-baseweb="select"] > div,textarea { background:#FFF7E9 !important; border-color:var(--warm-border) !important; color:var(--ink) !important; }
     [data-testid="stFileUploader"] { background:rgba(246,238,223,.72); border-radius:14px; border:1px dashed #A98F70; padding:8px; }
     hr { border-color:var(--warm-border) !important; }
+    /* Force top-level app containers and any rounded banner to use warm background */
+    [data-testid="stAppViewContainer"], #root > div, #root > div > div, #root > div > div > div, .main {
+        background: var(--warm-bg) !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+    /* Override any inline rounded elements (badges/headers) */
+    div[style*="border-radius"] {
+        background: var(--warm-bg) !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
     </style>
     """, unsafe_allow_html=True)
