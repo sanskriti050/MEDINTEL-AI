@@ -31,7 +31,13 @@ def load_css():
         padding: 0 !important;
         overflow: hidden !important;
     }
-    section[data-testid="stSidebar"] { background: linear-gradient(180deg,var(--warm-surface) 0%, var(--warm-bg) 100%); border-right:1px solid var(--warm-border); }
+    section[data-testid="stSidebar"], div[role="complementary"], div[data-testid="stSidebarNav"] {
+        background: linear-gradient(180deg,var(--warm-surface) 0%, var(--warm-bg) 100%) !important;
+        border-right:1px solid var(--warm-border) !important;
+        width: 240px !important;
+        min-width: 240px !important;
+        max-width: 240px !important;
+    }
     section[data-testid="stSidebar"] * { color:var(--muted) !important; }
     section[data-testid="stSidebar"] .stRadio label { border:1px solid rgba(240,225,201,.14); border-radius:10px; padding:8px 10px; margin-bottom:5px; }
     section[data-testid="stSidebar"] .stRadio label:hover { background:rgba(217,230,207,.14); border-color:rgba(217,230,207,.34); }
@@ -46,18 +52,13 @@ def load_css():
     div[data-baseweb="input"] > div,div[data-baseweb="select"] > div,textarea { background:#FFF7E9 !important; border-color:var(--warm-border) !important; color:var(--ink) !important; }
     [data-testid="stFileUploader"] { background:rgba(246,238,223,.72); border-radius:14px; border:1px dashed #A98F70; padding:8px; }
     hr { border-color:var(--warm-border) !important; }
-    /* Force top-level app containers and any rounded banner to use warm background */
+    .block-container { padding: 24px 28px 28px 28px !important; max-width: 1400px; margin: 0 auto; }
+    section[data-testid="stSidebar"] { padding: 22px 18px 20px 18px; width: 240px !important; max-width: 240px !important; min-width: 240px !important; }
+    .stApp, .main, .block-container, .stMarkdown, .stText, .stTextArea, .stSelectbox { line-height: 1.6 !important; }
     [data-testid="stAppViewContainer"], #root > div, #root > div > div, #root > div > div > div, .main {
         background: var(--warm-bg) !important;
         border-radius: 0 !important;
         box-shadow: none !important;
-    }
-    /* Override any inline rounded elements (badges/headers) */
-    div[style*="border-radius"] {
-        background: var(--warm-bg) !important;
-        border-radius: 0 !important;
-        box-shadow: none !important;
-        border: none !important;
     }
     </style>
     """, unsafe_allow_html=True)

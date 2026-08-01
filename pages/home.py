@@ -196,10 +196,11 @@ def show_home():
     st.subheader("🚀 What Can MedIntel AI Do?")
     st.markdown("<br>", unsafe_allow_html=True)
 
-    row1 = st.columns(3)
-    row2 = st.columns(3)
+    row1 = st.columns([0.12, 0.94, 0.94])
+    row2 = st.columns([0.12, 0.94, 0.94])
+    row3 = st.columns([0.12, 0.94, 0.94])
 
-    all_cols = row1 + row2
+    all_cols = row1[1:] + row2[1:] + row3[1:]
     for i, (icon, title, desc, color) in enumerate(FEATURES):
         with all_cols[i]:
             st.markdown(f"""
@@ -209,13 +210,13 @@ def show_home():
                 border-top:3px solid {color};
                 border-radius:16px;
                 padding:20px 18px;
-                height:160px;
-                margin-bottom:12px;
+                height:180px;
+                margin-bottom:18px;
                 box-shadow: 0 18px 36px rgba(80, 140, 95, 0.07);
             ">
-                <div style="font-size:1.8rem;margin-bottom:8px;">{icon}</div>
-                <h4 style="color:#1d4434;margin:0 0 8px 0;font-size:1rem;">{title}</h4>
-                <p style="color:#4b5f4d;font-size:0.84rem;margin:0;line-height:1.6;">{desc}</p>
+                <div style="font-size:1.9rem;margin-bottom:10px;">{icon}</div>
+                <h4 style="color:#1d4434;margin:0 0 10px 0;font-size:1.05rem;">{title}</h4>
+                <p style="color:#4b5f4d;font-size:0.88rem;margin:0;line-height:1.7;">{desc}</p>
             </div>
             """, unsafe_allow_html=True)
 
