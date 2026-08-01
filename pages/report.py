@@ -124,24 +124,24 @@ def show_report():
     left, right = st.columns([1, 2])
 
     with left:
-        gauge_color = "#16A34A" if score >= 70 else ("#F59E0B" if score >= 40 else "#DC2626")
+        gauge_color = "#16A34A" if score >= 70 else ("#c38a3e" if score >= 40 else "#b94c46")
         fig = go.Figure(go.Indicator(
             mode="gauge+number",
             value=score,
-            title={"text": "Health Score", "font": {"color": "white", "size": 16}},
-            number={"font": {"color": "white", "size": 40}},
+            title={"text": "Health Score", "font": {"color": "#1f3f2d", "size": 16}},
+            number={"font": {"color": "#1f3f2d", "size": 40}},
             gauge={
-                "axis": {"range": [0, 100], "tickcolor": "white", "tickfont": {"color": "white"}},
+                "axis": {"range": [0, 100], "tickcolor": "#22513a", "tickfont": {"color": "#22513a"}},
                 "bar": {"color": gauge_color},
-                "bgcolor": "#172033",
-                "bordercolor": "#334155",
+                "bgcolor": "#eefaf0",
+                "bordercolor": "#c7e1c7",
                 "steps": [
-                    {"range": [0, 40],  "color": "#450a0a"},
-                    {"range": [40, 70], "color": "#451a03"},
-                    {"range": [70, 100],"color": "#052e16"}
+                    {"range": [0, 40],  "color": "#e7f6ea"},
+                    {"range": [40, 70], "color": "#d2e9d4"},
+                    {"range": [70, 100],"color": "#b5dfb3"}
                 ],
                 "threshold": {
-                    "line": {"color": "white", "width": 2},
+                    "line": {"color": gauge_color, "width": 2},
                     "thickness": 0.75,
                     "value": score
                 }
@@ -177,8 +177,8 @@ def show_report():
     # ── Patient Summary ──────────────────────────────────────
     st.subheader("📋 Patient Summary")
     st.markdown(
-        f"""<div style="background:#172033;border-left:4px solid #2563EB;border-radius:8px;
-        padding:16px 20px;color:#e2e8f0;font-size:1rem;line-height:1.7;">
+        f"""<div style="background:#fff2e6;border-left:4px solid #c48e5c;border-radius:8px;
+        padding:16px 20px;color:#5a3d26;font-size:1rem;line-height:1.7;">
         {ai.get("patient_summary","No summary available.")}
         </div>""",
         unsafe_allow_html=True
@@ -244,8 +244,8 @@ def show_report():
     # ── Doctor Advice ────────────────────────────────────────
     st.subheader("👨‍⚕️ Doctor Advice")
     st.markdown(
-        f"""<div style="background:#1c1a07;border-left:4px solid #F59E0B;border-radius:8px;
-        padding:16px 20px;color:#fef3c7;font-size:1rem;line-height:1.7;">
+        f"""<div style="background:#fff2e6;border-left:4px solid #c48e5c;border-radius:8px;
+        padding:16px 20px;color:#5a3d26;font-size:1rem;line-height:1.7;">
         💬 {ai.get("doctor_advice","Please consult your healthcare provider.")}
         </div>""",
         unsafe_allow_html=True
@@ -259,18 +259,18 @@ def show_report():
     chart = px.pie(
         names=["Health Score", "Room for Improvement"],
         values=[score, remaining],
-        color_discrete_sequence=["#2563EB", "#1e293b"],
+        color_discrete_sequence=["#7cb98f", "#c6e4c2"],
         hole=0.65
     )
     chart.update_traces(
         textfont_size=14,
-        marker=dict(line=dict(color="#0B1220", width=2))
+        marker=dict(line=dict(color="#f7fdf6", width=2))
     )
     chart.update_layout(
         height=350,
         paper_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="white"),
-        legend=dict(font=dict(color="white")),
+        font=dict(color="#1f3f2d"),
+        legend=dict(font=dict(color="#1f3f2d")),
         margin=dict(t=20, b=20)
     )
     st.plotly_chart(chart, use_container_width=True)

@@ -195,11 +195,11 @@ def show_medicine():
 
     # ── Header ─────────────────────────────────────────────────
     st.markdown(
-        f"""<div style="background:#172033;border:1px solid #2563EB;border-radius:14px;padding:20px 24px;margin-bottom:16px;">
-        <h2 style="color:white;margin:0 0 4px 0;">💊 {info.get('name', medicine)}</h2>
-        <p style="color:#94A3B8;margin:0;">
-            <b style="color:#60A5FA;">Generic:</b> {info.get('generic_name','N/A')} &nbsp;|&nbsp;
-            <b style="color:#60A5FA;">Manufacturer:</b> {info.get('manufacturer','N/A')}
+        f"""<div style="background:#f2faf3;border:1px solid rgba(112, 178, 131, 0.30);border-radius:16px;padding:20px 24px;margin-bottom:16px;">
+        <h2 style="color:#1f4c36;margin:0 0 4px 0;">💊 {info.get('name', medicine)}</h2>
+        <p style="color:#3f6652;margin:0;">
+            <b style="color:#4d8e6f;">Generic:</b> {info.get('generic_name','N/A')} &nbsp;|&nbsp;
+            <b style="color:#4d8e6f;">Manufacturer:</b> {info.get('manufacturer','N/A')}
         </p>
         </div>""",
         unsafe_allow_html=True
@@ -219,8 +219,8 @@ def show_medicine():
     if mechanism and mechanism not in ("N/A", "Information not available."):
         st.subheader("⚙️ How It Works")
         st.markdown(
-            f"""<div style="background:#0f2744;border-left:4px solid #60A5FA;border-radius:8px;
-            padding:14px 18px;color:#bfdbfe;line-height:1.7;">{mechanism}</div>""",
+            f"""<div style="background:#fff2e6;border-left:4px solid #c48e5c;border-radius:10px;
+            padding:16px 18px;color:#5a3d26;line-height:1.7;">{mechanism}</div>""",
             unsafe_allow_html=True
         )
         st.divider()

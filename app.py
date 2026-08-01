@@ -16,11 +16,11 @@ st.set_page_config(
 )
 load_css()
 
-st.sidebar.markdown("""<div class="mi-side-brand"><div>✦</div><span>MEDINTEL <b>AI</b></span><small>INTELLIGENT HEALTHCARE</small></div>""", unsafe_allow_html=True)
-st.sidebar.markdown("<p class='mi-side-label'>EXPLORE YOUR HEALTH</p>", unsafe_allow_html=True)
+st.sidebar.markdown("<div class=\"mi-side-brand\"><div>✦</div><span>MEDINTEL <b>AI</b></span><small>INTELLIGENT HEALTHCARE</small></div>", unsafe_allow_html=True)
+st.sidebar.markdown("<p class='mi-side-label'>Quick access to your health tools</p>", unsafe_allow_html=True)
 
 page = st.sidebar.radio(
-    "Navigation",
+    "Tools",
     [
         "🏠 Home",
         "📄 Report Analyzer",
@@ -32,6 +32,7 @@ page = st.sidebar.radio(
     ]
 )
 
+st.sidebar.markdown("<div style='margin:18px 0 4px 0; height:1px; background:rgba(255,255,255,0.08);'></div>", unsafe_allow_html=True)
 
 st.sidebar.markdown("""<div class="mi-side-footer">🔒 Your health journey, kept simple.<br><span>Information, not a medical diagnosis.</span></div>""", unsafe_allow_html=True)
 
