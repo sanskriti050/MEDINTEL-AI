@@ -45,11 +45,12 @@ def load_css():
         background: #C8956C !important;
         background-image: none !important;
     }
-    section[data-testid="stSidebar"] * { color:#FFF3E8 !important; }
+    section[data-testid="stSidebar"] * { color:#FFF3E8 !important; font-size: 0.95rem !important; }
     section[data-testid="stSidebar"] .stRadio label { 
         border-radius: 8px !important;
         padding: 8px 10px !important;
         margin-bottom: 4px !important;
+        font-size: 0.95rem !important;
     }
     section[data-testid="stSidebar"] .stRadio label:hover { 
         background: rgba(180,130,80,0.15) !important;
