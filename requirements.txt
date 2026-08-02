@@ -10,3 +10,6 @@ pytesseract
 
 # OCR for scanned/photo-based PDFs; no separate Tesseract installation needed
 rapidocr-onnxruntime
+
+# RAG dependencies (lightweight TF-IDF — no model download needed)
+numpy>=1.24.0

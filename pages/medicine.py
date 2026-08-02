@@ -11,8 +11,16 @@ load_dotenv()
 def get_medicine_info(medicine_name: str) -> dict:
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-    prompt = f"""You are a senior clinical pharmacist with deep knowledge of all medicines worldwide.
+    # ── RAG: Retrieve relevant medical context ────────────────────────────
+    rag_context = ""
+    try:
+        from rag_engine import retrieve_relevant_context
+        rag_context = retrieve_relevant_context(medicine_name, top_k=3)
+    except Exception as e:
+        print(f"[RAG] Skipped: {e}")
 
+    prompt = f"""You are a senior clinical pharmacist with deep knowledge of all medicines worldwide.
+{rag_context}
 The user wants information about: "{medicine_name}"
 
 This could be:

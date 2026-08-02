@@ -10,8 +10,8 @@ client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 def analyze_medical_report(report_text: str, report_type: str) -> dict:
     """
-    Send report text to Groq LLM and get structured medical analysis back.
-    Handles any type of medical report PDF.
+    Analyze a medical report using RAG-enhanced Groq LLM.
+    Relevant medical knowledge is retrieved first and injected into the prompt.
     """
 
     # Truncate extremely long reports to avoid token limits
@@ -19,10 +19,18 @@ def analyze_medical_report(report_text: str, report_type: str) -> dict:
     if len(report_text) > max_chars:
         report_text = report_text[:max_chars] + "\n... [report truncated for analysis]"
 
+    # ── RAG: Retrieve relevant medical context ────────────────────────────
+    rag_context = ""
+    try:
+        from rag_engine import retrieve_relevant_context
+        rag_context = retrieve_relevant_context(report_text, top_k=6)
+    except Exception as e:
+        print(f"[RAG] Skipped: {e}")
+
     prompt = f"""You are a senior physician and medical analyst with 25+ years of experience.
 
 You have received a patient's {report_type}. Analyze it thoroughly.
-
+{rag_context}
 STRICT RULES — follow every one:
 1. Return ONLY a single valid JSON object. Nothing else.
 2. No markdown. No ```json. No explanation text before or after the JSON.
@@ -94,11 +102,8 @@ MEDICAL REPORT:
         )
 
         content = response.choices[0].message.content.strip()
-
-        # Aggressively clean any markdown wrapping
         content = content.replace("```json", "").replace("```", "").strip()
 
-        # Extract JSON object boundaries
         start = content.find("{")
         end = content.rfind("}") + 1
 
@@ -107,12 +112,10 @@ MEDICAL REPORT:
 
         parsed = json.loads(content[start:end])
 
-        # Sanitize and fill defaults
         parsed["health_score"] = max(0, min(100, int(parsed.get("health_score", 70))))
 
         risk = str(parsed.get("risk_level", "")).strip()
         if risk not in ("Low", "Moderate", "High"):
-            # Try to auto-correct common variations
             risk_lower = risk.lower()
             if "low" in risk_lower:
                 risk = "Low"
@@ -122,16 +125,13 @@ MEDICAL REPORT:
                 risk = "Moderate"
         parsed["risk_level"] = risk
 
-        # Ensure lists are lists
         for key in ("abnormal_values", "possible_conditions", "diet", "exercise"):
             if not isinstance(parsed.get(key), list):
                 parsed[key] = []
 
-        # Filter empty strings from lists
         for key in ("possible_conditions", "diet", "exercise"):
             parsed[key] = [item for item in parsed[key] if item and str(item).strip()]
 
-        # Ensure abnormal_values items are dicts
         parsed["abnormal_values"] = [
             item for item in parsed["abnormal_values"]
             if isinstance(item, dict) and item.get("test")
@@ -144,7 +144,6 @@ MEDICAL REPORT:
 
     except json.JSONDecodeError as je:
         print(f"JSON Parse Error: {je}")
-        print(f"Raw content was: {content[:500]}")
         return _fallback()
     except Exception as e:
         print(f"Groq Error: {e}")

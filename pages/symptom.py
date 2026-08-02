@@ -11,8 +11,17 @@ load_dotenv()
 def analyze_symptoms(age: int, gender: str, symptoms: str, duration: str, existing_conditions: str) -> dict:
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-    prompt = f"""You are an experienced physician with 20+ years of clinical practice.
+    # ── RAG: Retrieve relevant medical context ────────────────────────────
+    rag_context = ""
+    try:
+        from rag_engine import retrieve_relevant_context
+        query = f"{symptoms} {existing_conditions} age {age} {gender}"
+        rag_context = retrieve_relevant_context(query, top_k=5)
+    except Exception as e:
+        print(f"[RAG] Skipped: {e}")
 
+    prompt = f"""You are an experienced physician with 20+ years of clinical practice.
+{rag_context}
 A patient has described their symptoms. Analyze them thoroughly and provide a complete medical assessment.
 
 Patient Profile:
