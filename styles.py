@@ -32,23 +32,40 @@ def load_css():
         overflow: hidden !important;
     }
     section[data-testid="stSidebar"], div[role="complementary"], div[data-testid="stSidebarNav"] {
-        background: linear-gradient(180deg,var(--warm-surface) 0%, var(--warm-bg) 100%) !important;
-        border-right:1px solid var(--warm-border) !important;
+        background: #C8956C !important;
+        background-image: none !important;
+        border-right:1px solid #A8724A !important;
         width: 240px !important;
         min-width: 240px !important;
         max-width: 240px !important;
     }
-    section[data-testid="stSidebar"] * { color:var(--muted) !important; }
-    section[data-testid="stSidebar"] .stRadio label { border:1px solid rgba(240,225,201,.14); border-radius:10px; padding:8px 10px; margin-bottom:5px; }
-    section[data-testid="stSidebar"] .stRadio label:hover { background:rgba(217,230,207,.14); border-color:rgba(217,230,207,.34); }
+    section[data-testid="stSidebar"] > div,
+    section[data-testid="stSidebar"] > div:first-child,
+    [data-testid="stSidebarContent"] {
+        background: #C8956C !important;
+        background-image: none !important;
+    }
+    section[data-testid="stSidebar"] * { color:#FFF3E8 !important; }
+    section[data-testid="stSidebar"] .stRadio label { 
+        border-radius: 8px !important;
+        padding: 8px 10px !important;
+        margin-bottom: 4px !important;
+    }
+    section[data-testid="stSidebar"] .stRadio label:hover { 
+        background: rgba(180,130,80,0.15) !important;
+    }
     h1,h2,h3,h4,h5,h6 { color:var(--ink) !important; }
     p,label,span { color:var(--muted) !important; }
     .stMarkdown,.stText,[data-testid="stWidgetLabel"] { color:var(--ink); }
     div[data-testid="stMetric"],div[data-testid="stVerticalBlockBorderWrapper"] { background:var(--warm-surface); border:1px solid var(--warm-border); border-radius:16px; padding:14px; box-shadow:0 8px 24px rgba(73,57,39,.06); }
     [data-testid="stMetricLabel"] p { color:var(--muted) !important; }
     [data-testid="stMetricValue"] { color:var(--green-deep); }
-    .stButton > button { background:var(--green); color:#FFF8EB !important; border:1px solid var(--green); border-radius:10px; font-weight:650; height:46px; transition:all .18s ease; }
-    .stButton > button:hover { background:var(--green-deep); border-color:var(--green-deep); transform:translateY(-1px); }
+    .stButton > button { background:#C4956A; color:#FFF8EB !important; border:1px solid #B5845A; border-radius:10px; font-weight:650; height:46px; transition:all .18s ease; }
+    .stButton > button:hover { background:#A97548; border-color:#9A6840; transform:translateY(-1px); }
+    .stFormSubmitButton > button { background:#C4956A !important; color:#FFF8EB !important; border:1px solid #B5845A !important; border-radius:10px !important; font-weight:650 !important; height:46px !important; transition:all .18s ease !important; }
+    .stFormSubmitButton > button:hover { background:#A97548 !important; border-color:#9A6840 !important; transform:translateY(-1px) !important; }
+    .stDownloadButton > button { background:#C4956A !important; color:#FFF8EB !important; border:1px solid #B5845A !important; border-radius:10px !important; font-weight:650 !important; height:46px !important; transition:all .18s ease !important; }
+    .stDownloadButton > button:hover { background:#A97548 !important; border-color:#9A6840 !important; transform:translateY(-1px) !important; }
     div[data-baseweb="input"] > div,div[data-baseweb="select"] > div,textarea { background:#FFF7E9 !important; border-color:var(--warm-border) !important; color:var(--ink) !important; }
     [data-testid="stFileUploader"] { background:rgba(246,238,223,.72); border-radius:14px; border:1px dashed #A98F70; padding:8px; }
     hr { border-color:var(--warm-border) !important; }

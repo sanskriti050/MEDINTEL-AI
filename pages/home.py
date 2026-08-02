@@ -194,7 +194,7 @@ def show_home():
 
     # ── Features Grid ────────────────────────────────────────────────────────
     st.subheader("🚀 What Can MedIntel AI Do?")
-    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top:32px;'></div>", unsafe_allow_html=True)
 
     row1 = st.columns([0.12, 0.94, 0.94])
     row2 = st.columns([0.12, 0.94, 0.94])
