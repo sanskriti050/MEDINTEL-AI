@@ -143,7 +143,6 @@ medintel-ai/
 ├── rag_engine.py            # TF-IDF RAG retrieval engine
 ├── knowledge_base.py        # Medical knowledge chunks (54)
 ├── health_engine.py         # Rule-based health scoring + AI score blending
-├── database.py              # SQLite persistence layer (reports, vitals, profile)
 ├── dashboard_connector.py   # Auto-save reports to dashboard
 ├── utils.py                 # PDF extraction + OCR pipeline
 ├── styles.py                # Global CSS theming
