@@ -11,6 +11,9 @@ import re
 from datetime import date
 from datetime import datetime
 import streamlit as st
+from database import save_report, init_db
+
+init_db()   # ensure DB + tables exist
 
 
 # ── Normal ranges for common lab tests ───────────────────────────────────────
@@ -111,3 +114,6 @@ def save_report_to_dashboard(ai_result: dict, report_type: str, filename: str = 
             return   # already saved
 
     st.session_state.dash_reports.append(entry)
+
+    # ── Also persist to SQLite so data survives browser refresh ────────────
+    save_report(entry)
