@@ -141,8 +141,8 @@ medintel-ai/
 ├── app.py                   # Main entry point
 ├── analyzer.py              # RAG-enhanced report analysis
 ├── rag_engine.py            # TF-IDF RAG retrieval engine
-├── knowledge_base.py        # Medical knowledge chunks (40+)
-├── health_engine.py         # Rule-based health scoring
+├── knowledge_base.py        # Medical knowledge chunks (54)
+├── health_engine.py         # Rule-based health scoring + AI score blending
 ├── dashboard_connector.py   # Auto-save reports to dashboard
 ├── utils.py                 # PDF extraction + OCR pipeline
 ├── styles.py                # Global CSS theming
@@ -220,10 +220,16 @@ Upload PDF / Enter Symptoms / Search Medicine
 Text Extraction (PyMuPDF → RapidOCR → Groq Vision)
           │
           ▼
-RAG: TF-IDF retrieval from 40+ medical knowledge chunks
+RAG: TF-IDF retrieval from 54 medical knowledge chunks
           │
           ▼
 Groq LLaMA 3.3 70B Analysis (with RAG context injected)
+          │
+          ▼
+Rule-based Health Engine cross-check (35+ scoring rules)
+          │
+          ▼
+AI Score (75%) + Rule Score (25%) blended → Final Health Score
           │
           ▼
 Structured JSON response parsed & validated

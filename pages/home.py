@@ -5,6 +5,8 @@ import pandas as pd
 import random
 from datetime import datetime
 
+from components.cards import feature_card, metric_card, how_it_works_card
+
 
 # ── Health tips pool ─────────────────────────────────────────────────────────
 HEALTH_TIPS = [
@@ -21,24 +23,31 @@ HEALTH_TIPS = [
 ]
 
 FEATURES = [
-    ("📄", "Report Analyzer",   "Upload any blood test, thyroid, lipid, kidney, liver or X-ray PDF and get instant AI analysis.", "#4EBD8C"),
-    ("🩺", "Symptom Checker",   "Describe your symptoms and get possible diagnoses, severity, home remedies and doctor recommendations.", "#6BC49D"),
-    ("💊", "Medicine Guide",    "Search any medicine — Indian or international — and get complete dosage, side effects and interaction info.", "#78C8AA"),
-    ("🥗", "Diet Planner",      "Get a personalized meal plan based on your age, weight, health goal and existing medical conditions.", "#47A56F"),
-    ("📊", "Health Dashboard",  "Visualize your health score trends, report history and key health metrics all in one place.", "#3F9060"),
-    ("ℹ️",  "About",            "Learn about the technology powering MedIntel AI and important usage disclaimers.", "#66B08A"),
+    ("📄", "Report Analyzer",  "Upload any blood test, thyroid, lipid, kidney, liver or X-ray PDF and get instant AI analysis.", "#4EBD8C"),
+    ("🩺", "Symptom Checker",  "Describe your symptoms and get possible diagnoses, severity, home remedies and doctor recommendations.", "#6BC49D"),
+    ("💊", "Medicine Guide",   "Search any medicine — Indian or international — and get complete dosage, side effects and interaction info.", "#78C8AA"),
+    ("🥗", "Diet Planner",     "Get a personalized meal plan based on your age, weight, health goal and existing medical conditions.", "#47A56F"),
+    ("📊", "Health Dashboard", "Visualize your health score trends, report history and key health metrics all in one place.", "#3F9060"),
+    ("ℹ️",  "About",           "Learn about the technology powering MedIntel AI and important usage disclaimers.", "#66B08A"),
 ]
 
 STATS = [
-    ("📄", "Report Types",   "15+",  "Blood, Thyroid, Lipid, Kidney, Liver & more"),
+    ("📄", "Report Types",   "15+",       "Blood, Thyroid, Lipid, Kidney, Liver & more"),
     ("🤖", "AI Model",       "LLaMA 3.3", "70B parameters via Groq"),
-    ("⚡", "Analysis Speed", "~15s",  "Average report analysis time"),
-    ("🌐", "Medicines",      "Any",   "Indian & international brands supported"),
+    ("⚡", "Analysis Speed", "~15s",      "Average report analysis time"),
+    ("🌐", "Medicines",      "Any",       "Indian & international brands supported"),
+]
+
+STEPS = [
+    ("1️⃣", "#4EBD8C", "Upload / Input",  "Upload a PDF report, type symptoms, or search a medicine name"),
+    ("2️⃣", "#6BC49D", "AI Processes",    "Groq's LLaMA 3.3 70B model analyzes your input in real-time"),
+    ("3️⃣", "#78C8AA", "Get Insights",    "Receive health scores, diagnoses, recommendations, and advice"),
+    ("4️⃣", "#47A56F", "Take Action",     "Download your report, follow diet tips, or consult your doctor"),
 ]
 
 
 def _tip_of_the_day():
-    """Pick a consistent tip for today using date as seed."""
+    """Pick a consistent tip for today using the date as a seed."""
     random.seed(datetime.now().day + datetime.now().month)
     return random.choice(HEALTH_TIPS)
 
@@ -87,22 +96,11 @@ def show_home():
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # ── Quick Stats ──────────────────────────────────────────────────────────
+    # ── Quick Stats — uses metric_card from components/cards.py ─────────────
     cols = st.columns(4)
-    for i, (icon, label, value, sub) in enumerate(STATS):
-        with cols[i]:
-            st.markdown(f"""
-            <div style="
-                background:#fff8f0;border:1px solid rgba(204, 155, 100, 0.35);border-radius:16px;
-                padding:18px 14px;text-align:center;
-                box-shadow: 0 18px 36px rgba(156, 103, 55, 0.07);
-            ">
-                <div style="font-size:1.8rem;">{icon}</div>
-                <h2 style="color:#5d4028;margin:6px 0 2px 0;font-size:1.6rem;">{value}</h2>
-                <p style="color:#6c523f;font-size:0.9rem;font-weight:600;margin:0 0 2px 0;">{label}</p>
-                <p style="color:#8a6a4b;font-size:0.78rem;margin:0;">{sub}</p>
-            </div>
-            """, unsafe_allow_html=True)
+    for col, (icon, label, value, sub) in zip(cols, STATS):
+        with col:
+            metric_card(title=label, value=value, subtitle=sub, icon=icon)
 
     st.markdown("<br>", unsafe_allow_html=True)
     st.divider()
@@ -125,9 +123,9 @@ def show_home():
                 "bgcolor": "#fbf0e4",
                 "bordercolor": "rgba(186, 134, 84, 0.26)",
                 "steps": [
-                    {"range": [0, 40],  "color": "#f2e3d1"},
-                    {"range": [40, 70], "color": "#e7d0b4"},
-                    {"range": [70, 100], "color": "#d9b58e"}
+                    {"range": [0, 40],   "color": "#f2e3d1"},
+                    {"range": [40, 70],  "color": "#e7d0b4"},
+                    {"range": [70, 100], "color": "#d9b58e"},
                 ],
                 "threshold": {
                     "line": {"color": "#ad7a49", "width": 3},
@@ -143,7 +141,6 @@ def show_home():
         )
         st.plotly_chart(fig, use_container_width=True)
 
-        # Mini metrics row
         m1, m2, m3 = st.columns(3)
         m1.metric("❤️ Risk", "Low", "Stable")
         m2.metric("🩸 Abnormal", "2", "-1 this week")
@@ -155,15 +152,14 @@ def show_home():
         <div style="color:#1e4733;font-size:1rem;line-height:1.8;">
         MedIntel AI uses advanced artificial intelligence to help you understand your health better — without the jargon.
         <br><br>
-        Whether you have a <b style="color:#4f9f79;">blood report</b> you don't understand, 
-        <b style="color:#4a9e76;">symptoms</b> you're worried about, or want to know about a 
+        Whether you have a <b style="color:#4f9f79;">blood report</b> you don't understand,
+        <b style="color:#4a9e76;">symptoms</b> you're worried about, or want to know about a
         <b style="color:#4f9f79;">medicine</b> your doctor prescribed — we've got you covered.
         </div>
         """, unsafe_allow_html=True)
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # Health trend mini chart
         st.caption("📈 Sample Weekly Health Score Trend")
         trend_data = pd.DataFrame({
             "Week": ["W1", "W2", "W3", "W4", "W5", "W6"],
@@ -192,57 +188,30 @@ def show_home():
 
     st.divider()
 
-    # ── Features Grid ────────────────────────────────────────────────────────
+    # ── Features Grid — uses feature_card from components/cards.py ──────────
     st.subheader("🚀 What Can MedIntel AI Do?")
     st.markdown("<div style='margin-top:32px;'></div>", unsafe_allow_html=True)
 
-    row1 = st.columns([0.12, 0.94, 0.94])
-    row2 = st.columns([0.12, 0.94, 0.94])
-    row3 = st.columns([0.12, 0.94, 0.94])
+    row1 = st.columns(2)
+    row2 = st.columns(2)
+    row3 = st.columns(2)
+    all_cols = row1 + row2 + row3
 
-    all_cols = row1[1:] + row2[1:] + row3[1:]
-    for i, (icon, title, desc, color) in enumerate(FEATURES):
-        with all_cols[i]:
-            st.markdown(f"""
-            <div style="
-                background:#ffffff;
-                border:1px solid rgba(103, 177, 141, 0.20);
-                border-top:3px solid {color};
-                border-radius:16px;
-                padding:20px 18px;
-                height:180px;
-                margin-bottom:18px;
-                box-shadow: 0 18px 36px rgba(80, 140, 95, 0.07);
-            ">
-                <div style="font-size:1.9rem;margin-bottom:10px;">{icon}</div>
-                <h4 style="color:#1d4434;margin:0 0 10px 0;font-size:1.05rem;">{title}</h4>
-                <p style="color:#4b5f4d;font-size:0.88rem;margin:0;line-height:1.7;">{desc}</p>
-            </div>
-            """, unsafe_allow_html=True)
+    for col, (icon, title, desc, color) in zip(all_cols, FEATURES):
+        with col:
+            feature_card(icon=icon, title=title, description=desc, accent_color=color)
 
     st.markdown("<br>", unsafe_allow_html=True)
     st.divider()
 
-    # ── How It Works ────────────────────────────────────────────────────────
+    # ── How It Works — uses how_it_works_card from components/cards.py ──────
     st.subheader("⚙️ How It Works")
     st.markdown("<br>", unsafe_allow_html=True)
 
-    h1, h2, h3, h4 = st.columns(4)
-    steps = [
-        ("1️⃣", "#4EBD8C", "Upload / Input",    "Upload a PDF report, type symptoms, or search a medicine name"),
-        ("2️⃣", "#6BC49D", "AI Processes",       "Groq's LLaMA 3.3 70B model analyzes your input in real-time"),
-        ("3️⃣", "#78C8AA", "Get Insights",        "Receive health scores, diagnoses, recommendations, and advice"),
-        ("4️⃣", "#47A56F", "Take Action",          "Download your report, follow diet tips, or consult your doctor"),
-    ]
-    for col, (num, color, title, desc) in zip([h1, h2, h3, h4], steps):
+    step_cols = st.columns(4)
+    for col, (num, color, title, desc) in zip(step_cols, STEPS):
         with col:
-            st.markdown(f"""
-            <div style="background:#f7faf6;border:1px solid rgba(112, 182, 130, 0.22);border-radius:16px;padding:22px 16px;text-align:center;margin-bottom:8px;box-shadow:0 16px 30px rgba(80, 139, 103, 0.06);">
-                <div style="font-size:2rem;">{num}</div>
-                <h4 style="color:{color};margin:8px 0 6px 0;font-size:0.95rem;">{title}</h4>
-                <p style="color:#2f5140;font-size:0.85rem;margin:0;line-height:1.6;">{desc}</p>
-            </div>
-            """, unsafe_allow_html=True)
+            how_it_works_card(step_number=num, color=color, title=title, description=desc)
 
     st.markdown("<br>", unsafe_allow_html=True)
     st.divider()
@@ -260,7 +229,8 @@ def show_home():
         <div style="display:flex;align-items:center;gap:14px;">
             <div style="font-size:2.5rem;">{tip_icon}</div>
             <div>
-                <p style="color:#2c5d43;font-size:0.85rem;font-weight:700;margin:0 0 4px 0;text-transform:uppercase;letter-spacing:1px;">{tip_cat}</p>
+                <p style="color:#2c5d43;font-size:0.85rem;font-weight:700;margin:0 0 4px 0;
+                           text-transform:uppercase;letter-spacing:1px;">{tip_cat}</p>
                 <p style="color:#21513d;font-size:1.05rem;margin:0;line-height:1.6;">{tip_text}</p>
             </div>
         </div>
@@ -277,7 +247,9 @@ def show_home():
         padding:16px 20px;text-align:center;
     ">
         <p style="color:#224835;font-size:0.9rem;margin:0;">
-        ⚠️ <b>Medical Disclaimer:</b> MedIntel AI is for <b>informational purposes only</b> and does <b>not</b> replace professional medical advice, diagnosis, or treatment. Always consult a qualified healthcare provider.
+        ⚠️ <b>Medical Disclaimer:</b> MedIntel AI is for <b>informational purposes only</b>
+        and does <b>not</b> replace professional medical advice, diagnosis, or treatment.
+        Always consult a qualified healthcare provider.
         </p>
     </div>
     """, unsafe_allow_html=True)
