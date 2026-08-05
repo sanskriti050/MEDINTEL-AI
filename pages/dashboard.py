@@ -5,28 +5,17 @@ import pandas as pd
 from datetime import datetime, date
 import json
 
-from database import (
-    init_db, save_report, load_reports,
-    delete_last_report,
-    save_daily_vitals, load_daily_vitals,
-    save_profile, load_profile,
-)
-
-init_db()   # ensure tables exist
-
 # ── Session state initializer ─────────────────────────────────────────────────
 def _init_state():
-    # Load reports from DB into session_state (only on first load)
     if "dash_reports" not in st.session_state:
-        st.session_state.dash_reports = load_reports()
+        st.session_state.dash_reports = []
     if "dash_metrics" not in st.session_state:
         st.session_state.dash_metrics = []
-    # Load daily vitals from DB
-    if "dash_daily_vitals" not in st.session_state:
-        st.session_state.dash_daily_vitals = load_daily_vitals()
-    # Load profile from DB
     if "dash_profile" not in st.session_state:
-        st.session_state.dash_profile = load_profile()
+        st.session_state.dash_profile = {
+            "name": "", "age": 25, "gender": "Male",
+            "weight": 70.0, "height": 170.0, "blood_group": "A+"
+        }
 
 
 # ── Derived helpers ───────────────────────────────────────────────────────────
@@ -226,7 +215,6 @@ def show_dashboard():
             # Delete last report
             if st.button("🗑️ Delete Last Report", type="secondary"):
                 st.session_state.dash_reports.pop()
-                delete_last_report()   # remove from SQLite too
                 st.rerun()
 
 
@@ -293,7 +281,6 @@ def show_dashboard():
                 "added_at":      datetime.now().isoformat()
             }
             st.session_state.dash_reports.append(entry)
-            save_report(entry)   # persist to SQLite
             st.success(f"✅ Report saved! Health Score: **{health_score}/100** | Risk: **{risk_level}**")
             st.balloons()
 
@@ -414,7 +401,6 @@ def show_dashboard():
             if "dash_daily_vitals" not in st.session_state:
                 st.session_state.dash_daily_vitals = []
             st.session_state.dash_daily_vitals.append(entry)
-            save_daily_vitals(entry)   # persist to SQLite
 
             # Quick feedback
             alerts = []
@@ -494,7 +480,6 @@ def show_dashboard():
                 "blood_group": blood, "weight": weight, "height": height,
                 "conditions": conditions, "allergies": allergies
             }
-            save_profile(st.session_state.dash_profile)   # persist to SQLite
             st.success("✅ Profile saved!")
             profile = st.session_state.dash_profile
 

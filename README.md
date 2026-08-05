@@ -2,7 +2,7 @@
 
 MedIntel AI is an AI-powered healthcare platform that helps users analyze medical reports, understand health conditions, receive personalized recommendations, and access essential healthcare tools through an interactive dashboard.
 
-Built using **Python, Streamlit, Groq LLaMA 3.3 70B, RAG, SQLite, Plotly, and PyMuPDF**, the application provides fast, accurate, and user-friendly medical insights with a warm, modern interface.
+Built using **Python, Streamlit, Groq LLaMA 3.3 70B, RAG, Plotly, and PyMuPDF**, the application provides fast, accurate, and user-friendly medical insights with a warm, modern interface.
 
 > ⚠️ **Disclaimer:** MedIntel AI is designed for educational and informational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment.
 
@@ -74,7 +74,6 @@ Built using **Python, Streamlit, Groq LLaMA 3.3 70B, RAG, SQLite, Plotly, and Py
 - Health vitals tracker (hemoglobin, cholesterol, blood sugar, TSH, creatinine, Vitamin D)
 - Daily vitals log (BP, heart rate, SpO2, temperature, weight, water, sleep)
 - Personal health profile with BMI gauge
-- **Persistent storage — all data saved to local SQLite DB, survives browser refresh & restart**
 
 ---
 
@@ -125,7 +124,6 @@ No model download required — uses lightweight TF-IDF retrieval.
 | Groq API | AI inference engine |
 | LLaMA 3.3 70B | Large Language Model |
 | RAG (TF-IDF) | Retrieval-Augmented Generation |
-| SQLite | Persistent local database (no install needed) |
 | PyMuPDF (fitz) | PDF text extraction |
 | RapidOCR | OCR for scanned PDFs |
 | Groq Vision (LLaMA 4 Scout) | Vision OCR fallback |
@@ -146,7 +144,7 @@ medintel-ai/
 ├── knowledge_base.py        # Medical knowledge chunks (54)
 ├── health_engine.py         # Rule-based health scoring + AI score blending
 ├── database.py              # SQLite persistence layer (reports, vitals, profile)
-├── dashboard_connector.py   # Auto-save reports to dashboard + DB
+├── dashboard_connector.py   # Auto-save reports to dashboard
 ├── utils.py                 # PDF extraction + OCR pipeline
 ├── styles.py                # Global CSS theming
 ├── requirements.txt
@@ -158,7 +156,7 @@ medintel-ai/
 │   ├── symptom.py           # Symptom Checker (RAG-enhanced)
 │   ├── medicine.py          # Medicine Guide (RAG-enhanced)
 │   ├── diet.py              # Diet Planner
-│   ├── dashboard.py         # Health Dashboard (SQLite-backed)
+│   ├── dashboard.py         # Health Dashboard
 │   └── about.py             # About page
 │
 ├── components/
@@ -271,8 +269,7 @@ Auto-saved to Health Dashboard
 - [ ] Voice-based symptom input
 - [ ] Medical image analysis (X-ray, MRI interpretation)
 - [ ] Authentication system with user accounts
-- [x] Local SQLite database for persistent health history
-- [ ] Cloud database for multi-device sync
+- [ ] Cloud database for persistent health history
 - [ ] Wearable device integration
 - [ ] Appointment booking system
 - [ ] WhatsApp / Telegram health bot

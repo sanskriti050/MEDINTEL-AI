@@ -128,10 +128,13 @@ def save_report(entry: dict) -> None:
 
 
 def load_reports() -> list[dict]:
-    """Return all reports ordered by date ascending."""
+    """Return all reports ordered by date ascending (id excluded)."""
     with _get_conn() as conn:
         rows = conn.execute(
-            "SELECT * FROM reports ORDER BY date ASC, id ASC"
+            """SELECT date, report_type, score, risk, abnormal_count, notes,
+                      source, filename, added_at,
+                      hemoglobin, cholesterol, blood_sugar, tsh, creatinine, vitamin_d
+               FROM reports ORDER BY date ASC, id ASC"""
         ).fetchall()
     return [dict(row) for row in rows]
 
@@ -168,10 +171,10 @@ def save_daily_vitals(entry: dict) -> None:
 
 
 def load_daily_vitals() -> list[dict]:
-    """Return all daily vitals ordered by date ascending."""
+    """Return all daily vitals ordered by date ascending (id column excluded)."""
     with _get_conn() as conn:
         rows = conn.execute(
-            "SELECT * FROM daily_vitals ORDER BY date ASC, id ASC"
+            "SELECT date, bp, heart_rate, spo2, temp, weight, water, sleep FROM daily_vitals ORDER BY date ASC, id ASC"
         ).fetchall()
     return [dict(row) for row in rows]
 
