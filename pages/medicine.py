@@ -11,11 +11,11 @@ load_dotenv()
 def get_medicine_info(medicine_name: str) -> dict:
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-    # ── RAG: Retrieve relevant medical context ────────────────────────────
+    # ── RAG: Retrieve relevant drug reference data ────────────────────────
     rag_context = ""
     try:
-        from rag_engine import retrieve_relevant_context
-        rag_context = retrieve_relevant_context(medicine_name, top_k=3)
+        from rag_engine import retrieve_drug_context
+        rag_context = retrieve_drug_context(medicine_name, top_k=2)
     except Exception as e:
         print(f"[RAG] Skipped: {e}")
 

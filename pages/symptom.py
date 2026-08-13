@@ -1,9 +1,10 @@
 import streamlit as st
 import os
 import json
-from components.hero import show_hero, show_notice
 from dotenv import load_dotenv
 from groq import Groq
+
+from rag.retriever import RAGRetriever
 
 load_dotenv()
 
@@ -11,17 +12,18 @@ load_dotenv()
 def analyze_symptoms(age: int, gender: str, symptoms: str, duration: str, existing_conditions: str) -> dict:
     client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-    # ── RAG: Retrieve relevant medical context ────────────────────────────
-    rag_context = ""
-    try:
-        from rag_engine import retrieve_relevant_context
-        query = f"{symptoms} {existing_conditions} age {age} {gender}"
-        rag_context = retrieve_relevant_context(query, top_k=5)
-    except Exception as e:
-        print(f"[RAG] Skipped: {e}")
+    # --- RAG retrieval step ---------------------------------------------
+    # Retrieve the most relevant entries from our curated medical knowledge
+    # base based on the patient's described symptoms, so the LLM grounds
+    # its reasoning in reference data instead of relying purely on its
+    # own parametric knowledge.
+    retriever = RAGRetriever()
+    retrieved = retriever.retrieve(symptoms, top_k=3)
+    reference_context = retriever.format_context(retrieved)
+    # ----------------------------------------------------------------------
 
     prompt = f"""You are an experienced physician with 20+ years of clinical practice.
-{rag_context}
+
 A patient has described their symptoms. Analyze them thoroughly and provide a complete medical assessment.
 
 Patient Profile:
@@ -30,6 +32,11 @@ Patient Profile:
 - Symptoms: {symptoms}
 - Duration: {duration}
 - Existing Medical Conditions: {existing_conditions if existing_conditions else "None"}
+
+REFERENCE MEDICAL KNOWLEDGE (retrieved from knowledge base — use this to ground your
+assessment where relevant, but still use your own clinical judgment; the patient's
+actual symptoms take priority over the reference if they diverge):
+{reference_context}
 
 IMPORTANT RULES:
 - List ALL plausible conditions — from most to least likely. Do not limit to just 1-2.
@@ -90,7 +97,11 @@ Return this exact JSON structure:
 
         start = content.find("{")
         end = content.rfind("}") + 1
-        return json.loads(content[start:end])
+        result = json.loads(content[start:end])
+
+        # Attach retrieved sources so the UI can show what grounded this answer
+        result["_retrieved_sources"] = retrieved
+        return result
 
     except Exception as e:
         print(f"Groq Error: {e}")
@@ -109,9 +120,10 @@ Return this exact JSON structure:
 
 
 def show_symptom():
-    show_hero("🩺 Symptom Checker", "Share what you are experiencing and receive a structured health assessment.", "GUIDED HEALTH CHECK")
-    show_notice("A helpful first step", "This is educational guidance, not a diagnosis. For severe or worsening symptoms, contact a qualified doctor.", "⚕️")
-    st.markdown("### Tell us what you are feeling")
+    st.title("🩺 AI Symptom Checker")
+    st.caption("Describe your symptoms and get a detailed AI-powered medical assessment.")
+
+    st.warning("⚠️ This tool is for informational purposes only and does NOT replace professional medical advice. Always consult a qualified doctor.")
 
     # Session state
     if "symptom_result" not in st.session_state:
@@ -154,6 +166,18 @@ def show_symptom():
 
     st.divider()
     st.success("✅ Analysis Complete")
+
+    # -------------------------------------------------------
+    # RAG transparency — show what reference knowledge grounded this answer
+    # -------------------------------------------------------
+    sources = result.get("_retrieved_sources", [])
+    if sources:
+        with st.expander("📚 Reference knowledge used for this assessment (RAG)"):
+            for src in sources:
+                st.markdown(
+                    f"**{src['condition']}** — similarity: `{src['similarity_score']:.2f}`  \n"
+                    f"{src['description']}"
+                )
 
     # -------------------------------------------------------
     # Severity + Urgency

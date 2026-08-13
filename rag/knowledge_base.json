@@ -1,0 +1,146 @@
+[
+  {
+    "id": "kb001",
+    "condition": "Viral Fever / Influenza",
+    "symptoms": "fever, chills, body ache, fatigue, headache, sore throat, dry cough, runny nose",
+    "description": "A common viral infection causing fever (typically 100-103°F), generalized body aches, fatigue and upper respiratory symptoms. Usually self-limiting, resolving in 3-7 days.",
+    "typical_severity": "Mild to Moderate",
+    "standard_advice": "Rest, hydration (2-3L water/day), paracetamol for fever, warm fluids for throat, isolate if contagious. Seek care if fever exceeds 103°F or lasts more than 5 days."
+  },
+  {
+    "id": "kb002",
+    "condition": "Migraine",
+    "symptoms": "severe headache, throbbing pain one side of head, nausea, sensitivity to light, sensitivity to sound, visual aura",
+    "description": "A neurological condition causing intense, often one-sided pulsating headaches, frequently accompanied by nausea and heightened sensitivity to light/sound.",
+    "typical_severity": "Moderate to Severe",
+    "standard_advice": "Rest in a dark quiet room, avoid known triggers (caffeine withdrawal, certain foods, stress), OTC pain relief early in attack. Neurologist consult if frequent (>4/month) or worsening."
+  },
+  {
+    "id": "kb003",
+    "condition": "Gastroenteritis / Food Poisoning",
+    "symptoms": "nausea, vomiting, diarrhea, abdominal cramps, fever, dehydration, loss of appetite",
+    "description": "Inflammation of the stomach and intestines, usually caused by contaminated food/water or viral infection, leading to GI distress.",
+    "typical_severity": "Mild to Moderate",
+    "standard_advice": "Oral rehydration solution, BRAT diet (banana, rice, applesauce, toast), avoid dairy/spicy food. Seek urgent care if blood in stool, high fever, or signs of severe dehydration."
+  },
+  {
+    "id": "kb004",
+    "condition": "Urinary Tract Infection (UTI)",
+    "symptoms": "burning urination, frequent urination, urgency, lower abdominal pain, cloudy urine, pelvic pain",
+    "description": "Bacterial infection of the urinary tract, more common in women, causing painful and frequent urination.",
+    "typical_severity": "Mild to Moderate",
+    "standard_advice": "Increase water intake, cranberry juice may help, avoid holding urine. Requires antibiotic prescription from doctor — untreated UTI can progress to kidney infection (fever, back pain = red flag)."
+  },
+  {
+    "id": "kb005",
+    "condition": "Seasonal Allergic Rhinitis",
+    "symptoms": "sneezing, runny nose, itchy eyes, nasal congestion, watery eyes, itchy throat",
+    "description": "Allergic reaction to environmental triggers (pollen, dust, pet dander) causing inflammation of nasal passages.",
+    "typical_severity": "Mild",
+    "standard_advice": "Avoid known allergens, antihistamines, saline nasal rinse, air purifier. Consult doctor if symptoms persist beyond a season or affect sleep/daily function."
+  },
+  {
+    "id": "kb006",
+    "condition": "Tension Headache",
+    "symptoms": "dull headache, pressure around head, neck stiffness, mild to moderate pain, band-like tightness",
+    "description": "The most common headache type, often triggered by stress, poor posture, or muscle tension, presenting as a constant dull ache.",
+    "typical_severity": "Mild to Moderate",
+    "standard_advice": "Stress management, posture correction, adequate sleep, OTC analgesics, neck stretches. See doctor if headaches become frequent or severe."
+  },
+  {
+    "id": "kb007",
+    "condition": "Acid Reflux / GERD",
+    "symptoms": "heartburn, chest burning, regurgitation, sour taste, bloating, worse after eating or lying down",
+    "description": "Stomach acid flows back into the esophagus causing a burning sensation, often worsened by certain foods or lying down after meals.",
+    "typical_severity": "Mild to Moderate",
+    "standard_advice": "Avoid spicy/fatty food, don't lie down right after eating, elevate head while sleeping, antacids. Persistent symptoms (>2 weeks) need endoscopy evaluation."
+  },
+  {
+    "id": "kb008",
+    "condition": "Common Cold",
+    "symptoms": "runny nose, congestion, sneezing, mild sore throat, mild cough, low grade fever",
+    "description": "A mild viral upper respiratory infection, generally resolving within a week without treatment.",
+    "typical_severity": "Mild",
+    "standard_advice": "Rest, fluids, steam inhalation, OTC decongestants if needed. Usually self-resolving; see doctor if symptoms worsen after day 5 or high fever develops."
+  },
+  {
+    "id": "kb009",
+    "condition": "Anxiety / Panic Attack",
+    "symptoms": "chest tightness, rapid heartbeat, shortness of breath, sweating, trembling, feeling of impending doom, dizziness",
+    "description": "An acute episode of intense fear/anxiety with physical symptoms mimicking cardiac events; can be triggered by stress or occur without clear trigger.",
+    "typical_severity": "Moderate",
+    "standard_advice": "Slow breathing exercises, grounding techniques, remove from stressful stimulus. If first episode or chest pain is severe, rule out cardiac causes with a doctor first."
+  },
+  {
+    "id": "kb010",
+    "condition": "Iron Deficiency Anemia",
+    "symptoms": "fatigue, pale skin, weakness, shortness of breath, dizziness, brittle nails, cold hands feet",
+    "description": "Reduced red blood cell production due to insufficient iron, leading to reduced oxygen-carrying capacity and generalized fatigue.",
+    "typical_severity": "Mild to Moderate",
+    "standard_advice": "Iron-rich diet (leafy greens, red meat, legumes), Vitamin C to aid absorption, blood test (CBC, ferritin) to confirm diagnosis and guide supplementation."
+  },
+  {
+    "id": "kb011",
+    "condition": "Musculoskeletal Back Pain",
+    "symptoms": "lower back pain, muscle stiffness, pain worse with movement, localized tenderness, no radiating leg pain",
+    "description": "Pain arising from muscles, ligaments or joints of the spine, often from strain, poor posture or overexertion.",
+    "typical_severity": "Mild to Moderate",
+    "standard_advice": "Rest for 1-2 days then gentle movement, hot/cold compress, OTC anti-inflammatories, posture correction. Seek care if pain radiates down leg, or numbness/weakness present."
+  },
+  {
+    "id": "kb012",
+    "condition": "Type 2 Diabetes (uncontrolled/undiagnosed indicators)",
+    "symptoms": "excessive thirst, frequent urination, unexplained weight loss, fatigue, blurred vision, slow healing wounds",
+    "description": "A metabolic condition where the body cannot effectively regulate blood sugar, presenting with classic thirst/urination/fatigue triad when uncontrolled.",
+    "typical_severity": "Moderate to High",
+    "standard_advice": "Requires blood glucose/HbA1c testing promptly. Dietary modification, physical activity. This constellation of symptoms warrants medical evaluation, not just home management."
+  },
+  {
+    "id": "kb013",
+    "condition": "Asthma / Bronchospasm",
+    "symptoms": "wheezing, shortness of breath, chest tightness, cough worse at night, cough with exercise",
+    "description": "A chronic respiratory condition causing airway inflammation and narrowing, leading to episodic breathing difficulty.",
+    "typical_severity": "Moderate to High",
+    "standard_advice": "Identify and avoid triggers, prescribed inhaler use. Seek emergency care immediately if severe breathlessness, blue lips, or unable to speak full sentences — these are red-flag signs."
+  },
+  {
+    "id": "kb014",
+    "condition": "Conjunctivitis (Pink Eye)",
+    "symptoms": "red eyes, itchy eyes, watery discharge, gritty feeling, crusting eyelids",
+    "description": "Inflammation of the eye's conjunctiva, commonly viral or bacterial, highly contagious in the viral/bacterial form.",
+    "typical_severity": "Mild",
+    "standard_advice": "Avoid touching/rubbing eyes, frequent hand washing, warm compress, avoid sharing towels. See doctor if vision affected or severe pain — these need urgent evaluation."
+  },
+  {
+    "id": "kb015",
+    "condition": "Dengue Fever",
+    "symptoms": "high fever, severe headache, pain behind eyes, joint pain, muscle pain, rash, low platelet count",
+    "description": "A mosquito-borne viral infection common in tropical regions, causing high fever with distinctive severe body/joint pain (\"breakbone fever\").",
+    "typical_severity": "Moderate to High",
+    "standard_advice": "Hydration, paracetamol only (avoid ibuprofen/aspirin — bleeding risk), platelet monitoring via blood test. Warning signs needing immediate ER: bleeding gums, severe abdominal pain, persistent vomiting."
+  },
+  {
+    "id": "kb016",
+    "condition": "Chest Pain — Possible Cardiac",
+    "symptoms": "chest pain, pressure in chest, pain radiating to arm or jaw, sweating, shortness of breath, nausea with chest discomfort",
+    "description": "Chest pain with radiation to arm/jaw and associated sweating or breathlessness can indicate cardiac origin and requires immediate evaluation.",
+    "typical_severity": "High",
+    "standard_advice": "This symptom combination is a medical emergency. Call emergency services / go to ER immediately — do not wait or self-treat."
+  },
+  {
+    "id": "kb017",
+    "condition": "Hypothyroidism",
+    "symptoms": "fatigue, weight gain, cold intolerance, dry skin, hair loss, constipation, slow heart rate",
+    "description": "Underactive thyroid gland leading to slowed metabolism, causing a cluster of low-energy, weight, and temperature-regulation symptoms.",
+    "typical_severity": "Mild to Moderate",
+    "standard_advice": "Thyroid function test (TSH, T3, T4) needed for diagnosis. Managed with hormone replacement once confirmed by a doctor."
+  },
+  {
+    "id": "kb018",
+    "condition": "Sinusitis",
+    "symptoms": "facial pain, pressure around nose and eyes, nasal congestion, thick nasal discharge, reduced smell, headache",
+    "description": "Inflammation of the sinus cavities, often following a cold, causing facial pressure and congestion.",
+    "typical_severity": "Mild to Moderate",
+    "standard_advice": "Steam inhalation, saline nasal spray, decongestants, adequate hydration. See doctor if symptoms persist beyond 10 days or fever develops (possible bacterial sinusitis)."
+  }
+]
