@@ -1,305 +1,189 @@
-# 🏥 MedIntel AI – Intelligent Healthcare Assistant
+# MedIntel AI — Intelligent Healthcare Assistant
 
-MedIntel AI is an AI-powered healthcare platform that helps users analyze medical reports, understand health conditions, receive personalized recommendations, and access essential healthcare tools through an interactive dashboard.
+MedIntel AI is a Streamlit-based healthcare assistant that analyzes medical reports, answers symptom queries, and provides medicine and diet guidance using a Retrieval-Augmented Generation (RAG) pipeline built on the Groq LLaMA 3.3 70B API. It combines LLM-based reasoning with a deterministic rule engine so that results remain available and bounded even when the AI call fails.
 
-Built using **Python, Streamlit, Groq LLaMA 3.3 70B, RAG, Plotly, and PyMuPDF**, the application provides fast, accurate, and user-friendly medical insights with a warm, modern interface.
-
-> ⚠️ **Disclaimer:** MedIntel AI is designed for educational and informational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment.
+> **Disclaimer:** MedIntel AI is built for educational and informational purposes only. It is not a diagnostic tool and does not replace professional medical advice. Always consult a qualified healthcare provider for medical decisions.
 
 ---
 
-## ✨ Features
+## Overview
 
-### 📄 AI Medical Report Analyzer
-- Upload any medical PDF (blood test, thyroid, lipid, kidney, liver, X-ray, etc.)
-- Automatic report type detection (15+ report types supported)
-- RAG-enhanced AI analysis using Groq LLaMA 3.3 70B
-- Health Score (0–100) with interactive gauge chart
-- Risk Level prediction — Low / Moderate / High
-- Patient health summary paragraph
-- Abnormal test value detection with normal ranges
-- Possible medical conditions
-- Personalized diet & exercise recommendations
-- Doctor follow-up advice
-- Downloadable JSON analysis report
-- Auto-save to Health Dashboard
+Most "AI health report analyzer" projects wrap a single LLM call around a PDF upload and call it done. MedIntel AI is built around three engineering decisions meant to make the AI output more trustworthy and more resilient:
+
+1. **Hybrid scoring, not blind trust in the LLM.** Every report is scored twice — once by the Groq LLM and once by a deterministic, keyword-based rule engine (`health_engine.py`). The two scores are blended (75% AI / 25% rule-based), and if the LLM call fails outright, the system falls back entirely to the rule-based score rather than failing or hallucinating a result.
+2. **A layered PDF/OCR pipeline**, not a single extraction method. Each page of an uploaded report is processed independently through a cascade — embedded PDF text → local OCR (RapidOCR) → Tesseract (if available) → Groq Vision as a last resort — so a single PDF containing both digital and scanned/photographed pages is still handled correctly, page by page.
+3. **Domain-separated RAG.** Two independent TF-IDF knowledge bases (lab/report knowledge and drug knowledge) are indexed separately rather than merged, since mixing them would dilute retrieval quality for both — a term common in lab reports shouldn't influence drug-name matching, and vice versa.
 
 ---
 
-### 🩺 AI Symptom Checker
-- Enter age, gender, symptoms, duration, existing conditions
-- AI-powered possible condition list with likelihood (High / Moderate / Low)
-- Severity and urgency assessment
-- Recommended specialist type
-- OTC medicine suggestions
-- Home remedies
-- Suggested diagnostic tests
-- Emergency warning signs
-- Lifestyle advice
+## Features
+
+### Medical Report Analyzer
+- PDF upload with automatic report-type detection (12+ categories: CBC, lipid, diabetes, thyroid, kidney, liver, vitamins, urine, cardiac, radiology, hormone, infection)
+- RAG-grounded analysis via Groq LLaMA 3.3 70B
+- Health Score (0–100), blended from AI output and rule-based validation
+- Risk level classification (Low / Moderate / High), reconciled against the blended score
+- Abnormal test values with reference ranges
+- Possible conditions, diet and exercise recommendations, and doctor follow-up advice
+- Structured JSON output with response validation and fallback handling
+- Auto-logged to the Health Dashboard
+
+### Symptom Checker
+RAG-enhanced symptom analysis producing possible conditions with likelihood, severity/urgency assessment, specialist recommendations, OTC suggestions, home remedies, and emergency warning signs.
+
+### Medicine Guide
+Lookup by Indian or international brand/generic name, backed by a curated drug knowledge base (drug class, uses, dosage considerations, interactions, contraindications).
+
+### Diet Planner
+BMI and calorie calculation from user inputs, with a personalized meal plan, foods to avoid, hydration guidance, and supplement notes.
+
+### Health Dashboard
+Auto-imported and manually logged reports, score trend and risk distribution charts, a vitals tracker (hemoglobin, cholesterol, blood sugar, TSH, creatinine, Vitamin D), and a daily vitals log.
 
 ---
 
-### 💊 Medicine Guide
-- Search any medicine — Indian brands (Dolo, Crocin, Augmentin) or international
-- Generic name, manufacturer, drug class
-- Mechanism of action
-- Uses and indications
-- Dosage guide (adult, child, frequency, max dose)
-- Side effects (common, serious, rare)
-- Contraindications and drug interactions
-- Pregnancy & breastfeeding safety
-- Overdose, missed dose, alcohol interaction info
+## Architecture
 
----
-
-### 🥗 Personal Diet Planner
-- Input age, weight, height, gender, health goal, dietary preference
-- BMI calculation and category
-- Daily calorie target
-- Personalized breakfast, lunch, dinner, snacks
-- Foods to avoid
-- Hydration advice
-- Supplement recommendations
-- Nutrition tips
-
----
-
-### 📊 Health Dashboard
-- Auto-import reports from Report Analyzer
-- Manual report logging
-- Health score trend chart
-- Risk distribution pie chart
-- Reports by type bar chart
-- Full report history table
-- Health vitals tracker (hemoglobin, cholesterol, blood sugar, TSH, creatinine, Vitamin D)
-- Daily vitals log (BP, heart rate, SpO2, temperature, weight, water, sleep)
-- Personal health profile with BMI gauge
-
----
-
-## 🧠 RAG — Retrieval-Augmented Generation
-
-MedIntel AI uses a **custom RAG pipeline** to improve AI analysis accuracy.
-
-### How it works
-```
-User Input (report / symptoms / medicine)
-          │
-          ▼
-TF-IDF Similarity Search
-          │
-          ▼
-Top-5 Relevant Medical Knowledge Chunks Retrieved
-          │
-          ▼
-Injected into Groq LLM Prompt
-          │
-          ▼
-More Accurate, Fact-Grounded AI Response
+```text
+Upload PDF / Enter Symptoms / Search Medicine
+                    │
+                    ▼
+        Text Extraction (utils.py)
+  embedded text → RapidOCR → Tesseract → Groq Vision
+                    │
+                    ▼
+     RAG Retrieval (rag_engine.py, TF-IDF)
+   domain-separated: lab knowledge / drug knowledge
+                    │
+                    ▼
+        Groq LLaMA 3.3 70B (analyzer.py)
+       prompt grounded with retrieved context
+                    │
+                    ▼
+   Rule-Based Cross-Check (health_engine.py)
+     keyword/regex scoring, independent of the LLM
+                    │
+                    ▼
+     Blend: 75% AI score + 25% rule score
+        (falls back to 100% rule score on AI failure)
+                    │
+                    ▼
+   Response Validation & Normalization (analyzer.py)
+                    │
+                    ▼
+      Structured Result → UI + Health Dashboard
 ```
 
-### Knowledge Base covers
-- 🩸 CBC / Blood tests — normal ranges, causes of abnormalities
-- 🫀 Cholesterol / Lipid profile — risk levels, dietary guidance
-- 🍬 Diabetes — HbA1c, fasting sugar, postprandial ranges
-- 🦋 Thyroid — TSH, T3, T4 interpretation
-- 🫘 Kidney function — Creatinine, BUN, eGFR
-- 🟤 Liver function — ALT, AST, Bilirubin, ALP
-- 💊 Vitamins & Minerals — D, B12, Iron, Calcium
-- ❤️ Cardiovascular — BP, Troponin, heart health
-- 🏃 General health — BMI, sleep, exercise, diet guidelines
-
-### RAG Status
-Visible in the sidebar — 🟢 **RAG Active** when running, showing chunk count and model info.
-No model download required — uses lightweight TF-IDF retrieval.
-
 ---
 
-## 🚀 Tech Stack
+## Tech Stack
 
-| Technology | Purpose |
+| Layer | Technology |
 |---|---|
-| Python 3.10+ | Backend |
-| Streamlit | Web Application UI |
-| Groq API | AI inference engine |
-| LLaMA 3.3 70B | Large Language Model |
-| RAG (TF-IDF) | Retrieval-Augmented Generation |
-| PyMuPDF (fitz) | PDF text extraction |
-| RapidOCR | OCR for scanned PDFs |
-| Groq Vision (LLaMA 4 Scout) | Vision OCR fallback |
-| Plotly | Interactive charts |
-| Pandas | Data processing |
-| python-dotenv | Environment variables |
+| UI / App Framework | Streamlit |
+| LLM Inference | Groq API — LLaMA 3.3 70B |
+| Vision OCR Fallback | Groq API — LLaMA 4 Scout |
+| Retrieval | Custom TF-IDF RAG (no external model download) |
+| PDF Parsing | PyMuPDF (fitz) |
+| Local OCR | RapidOCR, Tesseract (optional) |
+| Data / Charts | Pandas, Plotly |
+| Config | python-dotenv |
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 medintel-ai/
 │
-├── app.py                   # Main entry point
-├── analyzer.py              # RAG-enhanced report analysis
-├── rag_engine.py            # TF-IDF RAG retrieval engine
-├── knowledge_base.py        # Medical knowledge chunks (54)
-├── health_engine.py         # Rule-based health scoring + AI score blending
-├── dashboard_connector.py   # Auto-save reports to dashboard
-├── utils.py                 # PDF extraction + OCR pipeline
-├── styles.py                # Global CSS theming
+├── app.py                   # Entry point and page router
+├── analyzer.py               # RAG-grounded report analysis + AI/rule blending
+├── rag_engine.py              # TF-IDF retrieval (lab + drug knowledge, indexed separately)
+├── knowledge_base.py           # Lab/condition knowledge chunks
+├── drug_knowledge_base.py       # Medicine reference data
+├── health_engine.py            # Rule-based scoring engine
+├── dashboard_connector.py        # Converts analysis results into dashboard entries
+├── utils.py                    # PDF extraction + OCR cascade + report-type detection
+├── styles.py                   # Global theming
+├── test_check.py               # Project health-check script (import/wiring smoke test)
 ├── requirements.txt
 ├── .env
 │
 ├── pages/
-│   ├── home.py              # Landing page
-│   ├── report.py            # Medical Report Analyzer
-│   ├── symptom.py           # Symptom Checker (RAG-enhanced)
-│   ├── medicine.py          # Medicine Guide (RAG-enhanced)
-│   ├── diet.py              # Diet Planner
-│   ├── dashboard.py         # Health Dashboard
-│   └── about.py             # About page
+│   ├── home.py
+│   ├── report.py               # Report Analyzer
+│   ├── symptom.py               # Symptom Checker
+│   ├── medicine.py               # Medicine Guide
+│   ├── diet.py                  # Diet Planner
+│   ├── dashboard.py              # Health Dashboard
+│   └── about.py
 │
 ├── components/
-│   ├── hero.py              # Hero section component
-│   ├── sidebar.py           # Sidebar component
-│   └── cards.py             # Card components
+│   ├── hero.py
+│   ├── sidebar.py
+│   └── cards.py
 │
 └── .streamlit/
-    └── config.toml          # Streamlit theme config
+    └── config.toml
 ```
 
 ---
 
-## ⚙️ Installation
+## Installation
 
-**1. Clone the repository**
 ```bash
 git clone https://github.com/yourusername/MedIntel-AI.git
 cd MedIntel-AI
-```
-
-**2. Install dependencies**
-```bash
 pip install -r requirements.txt
 ```
 
-**3. Set up environment variables**
-
 Create a `.env` file in the project root:
+
 ```env
 GROQ_API_KEY=your_groq_api_key_here
 ```
 
-Get your free API key at [console.groq.com](https://console.groq.com)
+A free API key is available at [console.groq.com](https://console.groq.com).
 
----
-
-## ▶️ Run the Project
+Run the app:
 
 ```bash
 streamlit run app.py
 ```
 
-The application will open automatically at `http://localhost:8501`
+The app opens at `http://localhost:8501`.
 
 ---
 
-## 🔑 Environment Variables
+## Design Notes / Known Limitations
 
-| Variable | Description | Required |
-|---|---|---|
-| `GROQ_API_KEY` | Groq API key for LLM inference | ✅ Yes |
-
----
-
-## 🧠 Full AI Workflow
-
-```text
-Upload PDF / Enter Symptoms / Search Medicine
-          │
-          ▼
-Text Extraction (PyMuPDF → RapidOCR → Groq Vision)
-          │
-          ▼
-RAG: TF-IDF retrieval from 54 medical knowledge chunks
-          │
-          ▼
-Groq LLaMA 3.3 70B Analysis (with RAG context injected)
-          │
-          ▼
-Rule-based Health Engine cross-check (35+ scoring rules)
-          │
-          ▼
-AI Score (75%) + Rule Score (25%) blended → Final Health Score
-          │
-          ▼
-Structured JSON response parsed & validated
-          │
-          ▼
-Health Score + Risk Level + Insights displayed
-          │
-          ▼
-Auto-saved to Health Dashboard
-```
+- The rule-based engine (`health_engine.py`) uses proximity-based keyword matching (test name within ~80 characters of a signal word like "high" or "low"). It's a fast, dependency-free sanity check on the LLM output — not a clinical scoring system — and can misfire on ambiguous report phrasing.
+- `test_check.py` is a manual smoke-check script that verifies imports, wiring, and report-type detection; it is not a `pytest` suite.
+- The AI/rule blend weighting (75/25) is a tunable constant in `blend_scores()`, chosen to favor contextual LLM understanding while keeping a deterministic floor.
 
 ---
 
-## 📊 Supported Report Types
+## Roadmap
 
-| Report Type | Key Tests Detected |
-|---|---|
-| Blood / CBC | Hemoglobin, WBC, RBC, Platelets, MCV |
-| Lipid Profile | Cholesterol, LDL, HDL, Triglycerides |
-| Diabetes | Glucose, HbA1c, Fasting Sugar, PPBS |
-| Thyroid | TSH, T3, T4, Free T3, Free T4 |
-| Kidney Function | Creatinine, BUN, eGFR, Uric Acid |
-| Liver Function | ALT, AST, Bilirubin, ALP, Albumin |
-| Vitamin Profile | Vitamin D, B12, Iron, Calcium, Zinc |
-| Urine Analysis | Routine urine, pus cells |
-| Cardiac | ECG, Troponin, Echocardiogram |
-| Radiology | X-ray, MRI, CT Scan, Ultrasound |
-| Hormone Profile | Testosterone, Estrogen, Cortisol, FSH |
-| Infection | CRP, ESR, Dengue, HIV, Hepatitis |
-
----
-
-## 🔮 Future Enhancements
-
-- [ ] Multi-language support (Hindi, regional languages)
-- [ ] Voice-based symptom input
-- [ ] Medical image analysis (X-ray, MRI interpretation)
-- [ ] Authentication system with user accounts
-- [ ] Cloud database for persistent health history
+- [ ] Multi-language support
+- [ ] Medical image analysis (X-ray/MRI interpretation)
+- [ ] User authentication and persistent cloud storage
+- [ ] Semantic RAG with vector embeddings (currently TF-IDF by design, to avoid model downloads)
 - [ ] Wearable device integration
-- [ ] Appointment booking system
-- [ ] WhatsApp / Telegram health bot
-- [ ] Semantic RAG with vector embeddings (when disk space available)
 
 ---
 
-## 🛡️ Disclaimer
+## Disclaimer
 
-MedIntel AI provides AI-generated healthcare information intended for **educational and informational purposes only**.
-
-- Does **not** replace professional medical advice, diagnosis, or treatment
-- Always consult a qualified healthcare professional for medical decisions
-- In case of emergency, contact local emergency services immediately
+MedIntel AI provides AI-generated information for educational purposes only. It does not replace professional medical advice, diagnosis, or treatment. In case of emergency, contact local emergency services immediately.
 
 ---
 
-## 👩‍💻 Author
+## Author
 
-**Sanskriti Agarwal**  
-B.Tech – Artificial Intelligence & Machine Learning  
-Full Stack & AI Developer
+**Sanskriti Agarwal**
+B.Tech — Artificial Intelligence & Machine Learning
 
----
+## License
 
-## ⭐ Support
-
-If you found this project useful, give it a ⭐ on GitHub — it helps and motivates future development!
-
----
-
-## 📜 License
-
-This project is licensed under the **MIT License**.
+MIT License
