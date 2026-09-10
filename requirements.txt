@@ -7,4 +7,6 @@ pymupdf
 pillow
 reportlab
 pytesseract
- 
+faiss-cpu
+sentence-transformers
+numpy
