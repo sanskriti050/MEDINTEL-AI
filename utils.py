@@ -170,7 +170,7 @@ def _try_groq_vision_page(image_bytes: bytes, page_number: int) -> str:
         encoded = base64.b64encode(image_bytes).decode("utf-8")
         client = Groq(api_key=api_key)
         response = client.chat.completions.create(
-            model="meta-llama/llama-4-scout-17b-16e-instruct",
+            model="llama-3.2-11b-vision-preview",
             messages=[{
                 "role": "user",
                 "content": [
