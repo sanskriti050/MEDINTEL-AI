@@ -10,3 +10,5 @@ pytesseract
 faiss-cpu
 sentence-transformers
 numpy
+rapidocr-onnxruntime
+onnxruntime

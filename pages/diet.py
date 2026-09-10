@@ -53,6 +53,7 @@ Rules:
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             temperature=0.3,
+            max_tokens=2500,
             messages=[{"role": "user", "content": prompt}]
         )
         content = response.choices[0].message.content.strip()

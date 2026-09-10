@@ -39,22 +39,32 @@ class RAGRetriever:
 
     def _load(self):
         if not os.path.exists(_INDEX_PATH) or not os.path.exists(_META_PATH):
-            raise FileNotFoundError(
-                "FAISS index not found. Run `python rag/build_index.py` first "
-                "to build the knowledge base index."
-            )
+            print("[RAG] FAISS index not found — symptom checker will work without RAG context.")
+            self.model = None
+            self.index = None
+            self.metadata = []
+            return
 
-        self.model = SentenceTransformer(_MODEL_NAME)
-        self.index = faiss.read_index(_INDEX_PATH)
+        try:
+            self.model = SentenceTransformer(_MODEL_NAME)
+            self.index = faiss.read_index(_INDEX_PATH)
 
-        with open(_META_PATH, "r", encoding="utf-8") as f:
-            self.metadata = json.load(f)
+            with open(_META_PATH, "r", encoding="utf-8") as f:
+                self.metadata = json.load(f)
+        except Exception as e:
+            print(f"[RAG] Failed to load index: {e}")
+            self.model = None
+            self.index = None
+            self.metadata = []
 
     def retrieve(self, query: str, top_k: int = 3) -> list[dict]:
         """
         Return the top_k knowledge-base entries most relevant to `query`.
         Each result includes the original entry plus a similarity score.
         """
+        if self.model is None or self.index is None:
+            return []
+
         query_vec = self.model.encode([query], normalize_embeddings=True)
         query_vec = np.asarray(query_vec, dtype="float32")
 
