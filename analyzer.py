@@ -20,10 +20,11 @@ from dotenv import load_dotenv
 from groq import Groq
 
 from health_engine import calculate_health_score, blend_scores   # ← health_engine now used
+from config import get_groq_api_key
 
 load_dotenv()
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+client = Groq(api_key=get_groq_api_key())
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -121,7 +122,7 @@ MEDICAL REPORT:
     # ── 5. Call Groq LLM ─────────────────────────────────────────────────────
     try:
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="qwen/qwen3.8-27b",
             temperature=0.15,
             max_tokens=4000,
             messages=[

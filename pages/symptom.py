@@ -5,12 +5,13 @@ from dotenv import load_dotenv
 from groq import Groq
 
 from rag.retriever import RAGRetriever
+from config import get_groq_api_key
 
 load_dotenv()
 
 
 def analyze_symptoms(age: int, gender: str, symptoms: str, duration: str, existing_conditions: str) -> dict:
-    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+    client = Groq(api_key=get_groq_api_key())
 
     # --- RAG retrieval step ---------------------------------------------
     # Retrieve the most relevant entries from our curated medical knowledge
@@ -85,7 +86,7 @@ Return this exact JSON structure:
 
     try:
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="qwen/qwen3.8-27b",
             temperature=0.2,
             max_tokens=2500,
             messages=[{"role": "user", "content": prompt}]

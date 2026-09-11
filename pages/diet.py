@@ -4,13 +4,14 @@ import json
 from components.hero import show_hero, show_notice
 from dotenv import load_dotenv
 from groq import Groq
+from config import get_groq_api_key
 
 load_dotenv()
 
 
 def get_diet_plan(age: int, gender: str, weight: float, height: float,
                   goal: str, conditions: str, dietary_pref: str) -> dict:
-    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+    client = Groq(api_key=get_groq_api_key())
 
     bmi = round(weight / ((height / 100) ** 2), 1)
 
@@ -51,7 +52,7 @@ Rules:
 
     try:
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="qwen/qwen3.8-27b",
             temperature=0.3,
             max_tokens=2500,
             messages=[{"role": "user", "content": prompt}]

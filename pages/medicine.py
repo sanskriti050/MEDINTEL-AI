@@ -4,12 +4,13 @@ import json
 from components.hero import show_hero, show_notice
 from dotenv import load_dotenv
 from groq import Groq
+from config import get_groq_api_key
 
 load_dotenv()
 
 
 def get_medicine_info(medicine_name: str) -> dict:
-    client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+    client = Groq(api_key=get_groq_api_key())
 
     # ── RAG: Retrieve relevant drug reference data ────────────────────────
     rag_context = ""
@@ -92,7 +93,7 @@ Return EXACTLY this JSON:
 
     try:
         response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+            model="qwen/qwen3.8-27b",
             temperature=0.1,
             max_tokens=2500,
             messages=[
